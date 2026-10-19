@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %}Crear cuenta{% endblock %}
+
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>Crear cuenta</h1>
+
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% for campo in form %}
+      <div class="campo-grupo">
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+        {% if campo.help_text %}
+          <small class="ayuda">{{ campo.help_text|safe }}</small>
+        {% endif %}
+        {% for error in campo.errors %}
+          <small class="error">{{ error }}</small>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="boton boton-principal">Crear cuenta</button>
+  </form>
+
+  <p class="texto-secundario">
+    ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>.
+  </p>
+</section>
+{% endblock %}

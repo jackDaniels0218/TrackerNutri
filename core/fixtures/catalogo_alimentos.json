@@ -1,0 +1,442 @@
+[
+  {
+    "model": "core.alimento",
+    "pk": 1,
+    "fields": {
+      "nombre": "Arepa de maíz",
+      "categoria": "Cereales y derivados",
+      "unidad_referencia": "g",
+      "calorias": "180.00",
+      "proteinas": "4.00",
+      "carbohidratos": "38.00",
+      "grasas": "1.50",
+      "metodo_preparacion": "asado",
+      "gramos_por_unidad": "100.00",
+      "descripcion_porcion": "Arepa mediana de unos 100 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "El peso y el grosor varían mucho entre regiones y entre arepa de maíz blanco y amarillo.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 2,
+    "fields": {
+      "nombre": "Arepa de maíz",
+      "categoria": "Cereales y derivados",
+      "unidad_referencia": "g",
+      "calorias": "280.00",
+      "proteinas": "4.50",
+      "carbohidratos": "39.00",
+      "grasas": "12.00",
+      "metodo_preparacion": "frito",
+      "gramos_por_unidad": "100.00",
+      "descripcion_porcion": "Arepa mediana de unos 100 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Los valores YA incluyen el aceite absorbido al freír: no se debe volver a sumar.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 3,
+    "fields": {
+      "nombre": "Arroz blanco",
+      "categoria": "Cereales y derivados",
+      "unidad_referencia": "g",
+      "calorias": "130.00",
+      "proteinas": "2.70",
+      "carbohidratos": "28.00",
+      "grasas": "0.30",
+      "metodo_preparacion": "cocido",
+      "gramos_por_unidad": "150.00",
+      "descripcion_porcion": "Porción de almuerzo de unos 150 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Arroz cocido sin aceite añadido.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 4,
+    "fields": {
+      "nombre": "Carne de res",
+      "categoria": "Carnes",
+      "unidad_referencia": "g",
+      "calorias": "220.00",
+      "proteinas": "30.00",
+      "carbohidratos": "0.00",
+      "grasas": "10.00",
+      "metodo_preparacion": "asado",
+      "gramos_por_unidad": "120.00",
+      "descripcion_porcion": "Porción de unos 120 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Corte magro a la plancha o a la parrilla, sin salsa.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 5,
+    "fields": {
+      "nombre": "Carne de res",
+      "categoria": "Carnes",
+      "unidad_referencia": "g",
+      "calorias": "270.00",
+      "proteinas": "28.00",
+      "carbohidratos": "0.50",
+      "grasas": "17.00",
+      "metodo_preparacion": "frito",
+      "gramos_por_unidad": "120.00",
+      "descripcion_porcion": "Porción de unos 120 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Los valores YA incluyen el aceite absorbido al freír.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 6,
+    "fields": {
+      "nombre": "Pechuga de pollo",
+      "categoria": "Carnes",
+      "unidad_referencia": "g",
+      "calorias": "165.00",
+      "proteinas": "31.00",
+      "carbohidratos": "0.00",
+      "grasas": "3.60",
+      "metodo_preparacion": "asado",
+      "gramos_por_unidad": "120.00",
+      "descripcion_porcion": "Porción de unos 120 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Pechuga sin piel.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 7,
+    "fields": {
+      "nombre": "Pechuga de pollo",
+      "categoria": "Carnes",
+      "unidad_referencia": "g",
+      "calorias": "150.00",
+      "proteinas": "29.00",
+      "carbohidratos": "0.00",
+      "grasas": "3.20",
+      "metodo_preparacion": "cocido",
+      "gramos_por_unidad": "120.00",
+      "descripcion_porcion": "Porción de unos 120 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Pechuga sin piel, cocida en agua.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 8,
+    "fields": {
+      "nombre": "Huevo",
+      "categoria": "Huevos",
+      "unidad_referencia": "g",
+      "calorias": "155.00",
+      "proteinas": "13.00",
+      "carbohidratos": "1.10",
+      "grasas": "11.00",
+      "metodo_preparacion": "cocido",
+      "gramos_por_unidad": "50.00",
+      "descripcion_porcion": "Huevo mediano de unos 50 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Huevo cocido en agua, sin grasa añadida.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 9,
+    "fields": {
+      "nombre": "Huevo",
+      "categoria": "Huevos",
+      "unidad_referencia": "g",
+      "calorias": "200.00",
+      "proteinas": "13.60",
+      "carbohidratos": "0.90",
+      "grasas": "15.30",
+      "metodo_preparacion": "frito",
+      "gramos_por_unidad": "55.00",
+      "descripcion_porcion": "Huevo frito de unos 55 g con el aceite absorbido",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Los valores YA incluyen el aceite absorbido al freír.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 10,
+    "fields": {
+      "nombre": "Papa",
+      "categoria": "Tubérculos",
+      "unidad_referencia": "g",
+      "calorias": "87.00",
+      "proteinas": "1.90",
+      "carbohidratos": "20.00",
+      "grasas": "0.10",
+      "metodo_preparacion": "cocido",
+      "gramos_por_unidad": "150.00",
+      "descripcion_porcion": "Papa mediana de unos 150 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Papa cocida en agua, sin sal ni grasa añadida.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 11,
+    "fields": {
+      "nombre": "Yuca",
+      "categoria": "Tubérculos",
+      "unidad_referencia": "g",
+      "calorias": "160.00",
+      "proteinas": "1.40",
+      "carbohidratos": "38.00",
+      "grasas": "0.30",
+      "metodo_preparacion": "cocido",
+      "gramos_por_unidad": "150.00",
+      "descripcion_porcion": "Porción de unos 150 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Yuca cocida en agua.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 12,
+    "fields": {
+      "nombre": "Plátano maduro",
+      "categoria": "Tubérculos y plátanos",
+      "unidad_referencia": "g",
+      "calorias": "122.00",
+      "proteinas": "1.30",
+      "carbohidratos": "32.00",
+      "grasas": "0.40",
+      "metodo_preparacion": "asado",
+      "gramos_por_unidad": "120.00",
+      "descripcion_porcion": "Plátano mediano de unos 120 g ya pelado",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Plátano maduro asado al horno, sin azúcar ni mantequilla.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 13,
+    "fields": {
+      "nombre": "Patacón",
+      "categoria": "Tubérculos y plátanos",
+      "unidad_referencia": "g",
+      "calorias": "310.00",
+      "proteinas": "2.00",
+      "carbohidratos": "48.00",
+      "grasas": "12.00",
+      "metodo_preparacion": "frito",
+      "gramos_por_unidad": "50.00",
+      "descripcion_porcion": "Patacón mediano de unos 50 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Los valores YA incluyen el aceite absorbido. El tamaño cambia mucho según el local.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 14,
+    "fields": {
+      "nombre": "Empanada de carne",
+      "categoria": "Preparaciones",
+      "unidad_referencia": "g",
+      "calorias": "280.00",
+      "proteinas": "9.00",
+      "carbohidratos": "30.00",
+      "grasas": "14.00",
+      "metodo_preparacion": "frito",
+      "gramos_por_unidad": "80.00",
+      "descripcion_porcion": "Empanada mediana de unos 80 g",
+      "fuente": "Estimación de referencia para uso académico a partir de una receta tipo (masa de maíz, carne y papa). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "El relleno y el tamaño varían mucho. Los valores ya incluyen el aceite de fritura.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 15,
+    "fields": {
+      "nombre": "Empanada de pollo",
+      "categoria": "Preparaciones",
+      "unidad_referencia": "g",
+      "calorias": "270.00",
+      "proteinas": "10.00",
+      "carbohidratos": "29.00",
+      "grasas": "13.00",
+      "metodo_preparacion": "frito",
+      "gramos_por_unidad": "80.00",
+      "descripcion_porcion": "Empanada mediana de unos 80 g",
+      "fuente": "Estimación de referencia para uso académico a partir de una receta tipo (masa de maíz, pollo y papa). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "El relleno y el tamaño varían mucho. Los valores ya incluyen el aceite de fritura.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 16,
+    "fields": {
+      "nombre": "Fríjoles",
+      "categoria": "Leguminosas",
+      "unidad_referencia": "g",
+      "calorias": "130.00",
+      "proteinas": "8.00",
+      "carbohidratos": "22.00",
+      "grasas": "0.60",
+      "metodo_preparacion": "cocido",
+      "gramos_por_unidad": "150.00",
+      "descripcion_porcion": "Porción de unos 150 g",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de TCAC-ICBF). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Fríjol cocido sin carnes ni grasas añadidas. Los fríjoles 'antioqueños' con tocino tienen bastante más grasa.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 17,
+    "fields": {
+      "nombre": "Aguacate",
+      "categoria": "Frutas",
+      "unidad_referencia": "g",
+      "calorias": "160.00",
+      "proteinas": "2.00",
+      "carbohidratos": "9.00",
+      "grasas": "15.00",
+      "metodo_preparacion": "crudo",
+      "gramos_por_unidad": "150.00",
+      "descripcion_porcion": "Medio aguacate común, unos 150 g de pulpa",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Solo la pulpa. El aguacate 'papelillo' y el común tienen tamaños muy distintos.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 18,
+    "fields": {
+      "nombre": "Leche entera",
+      "categoria": "Lácteos",
+      "unidad_referencia": "ml",
+      "calorias": "61.00",
+      "proteinas": "3.20",
+      "carbohidratos": "4.80",
+      "grasas": "3.30",
+      "metodo_preparacion": "no_aplica",
+      "gramos_por_unidad": "200.00",
+      "descripcion_porcion": "Vaso de 200 ml",
+      "fuente": "Estimación de referencia para uso académico (orden de magnitud de USDA FoodData Central). Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Valores expresados por 100 ml, no por 100 g.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 19,
+    "fields": {
+      "nombre": "Agua",
+      "categoria": "Bebidas",
+      "unidad_referencia": "ml",
+      "calorias": "0.00",
+      "proteinas": "0.00",
+      "carbohidratos": "0.00",
+      "grasas": "0.00",
+      "metodo_preparacion": "no_aplica",
+      "gramos_por_unidad": "250.00",
+      "descripcion_porcion": "Vaso de 250 ml",
+      "fuente": "El agua no aporta energía ni macronutrientes.",
+      "valores_aproximados": false,
+      "notas": "Se incluye para que el usuario pueda registrar lo que bebe sin alterar el total de calorías.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 20,
+    "fields": {
+      "nombre": "Gaseosa azucarada",
+      "categoria": "Bebidas",
+      "unidad_referencia": "ml",
+      "calorias": "42.00",
+      "proteinas": "0.00",
+      "carbohidratos": "10.60",
+      "grasas": "0.00",
+      "metodo_preparacion": "no_aplica",
+      "gramos_por_unidad": "350.00",
+      "descripcion_porcion": "Botella personal de 350 ml",
+      "fuente": "Estimación de referencia para uso académico a partir de la información nutricional habitual de las gaseosas de cola. Verificar en la etiqueta del producto.",
+      "valores_aproximados": true,
+      "notas": "Valores por 100 ml. Cada marca declara cifras algo distintas en su etiqueta.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 21,
+    "fields": {
+      "nombre": "Jugo de fruta natural",
+      "categoria": "Bebidas",
+      "unidad_referencia": "ml",
+      "calorias": "50.00",
+      "proteinas": "0.30",
+      "carbohidratos": "12.00",
+      "grasas": "0.10",
+      "metodo_preparacion": "no_aplica",
+      "gramos_por_unidad": "250.00",
+      "descripcion_porcion": "Vaso de 250 ml",
+      "fuente": "Estimación de referencia para uso académico. Verificar antes de cualquier uso real.",
+      "valores_aproximados": true,
+      "notas": "Jugo en agua con poca azúcar añadida. En leche o con más azúcar el valor sube bastante.",
+      "activo": true
+    }
+  },
+  {
+    "model": "core.alimento",
+    "pk": 22,
+    "fields": {
+      "nombre": "Bandeja paisa",
+      "categoria": "Preparaciones compuestas",
+      "unidad_referencia": "g",
+      "calorias": "215.00",
+      "proteinas": "12.00",
+      "carbohidratos": "18.00",
+      "grasas": "11.00",
+      "metodo_preparacion": "no_aplica",
+      "gramos_por_unidad": "600.00",
+      "descripcion_porcion": "Bandeja completa de unos 600 g",
+      "fuente": "Estimación de referencia para uso académico a partir de una receta tipo (fríjoles, arroz, carne molida, chicharrón, chorizo, huevo, plátano y arepa). NO es un valor oficial.",
+      "valores_aproximados": true,
+      "notas": "Es la entrada menos precisa del catálogo: la bandeja paisa cambia por completo según el restaurante. Para un cálculo serio conviene registrar cada componente por separado.",
+      "activo": true
+    }
+  }
+]

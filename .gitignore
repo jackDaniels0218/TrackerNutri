@@ -1,0 +1,25 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Secretos: nunca deben subirse
+.env
+
+# Base de datos local
+db.sqlite3
+db.sqlite3-journal
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Archivos estáticos recolectados
+staticfiles/
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+*.swp

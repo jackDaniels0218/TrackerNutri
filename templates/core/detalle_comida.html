@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ comida.descripcion }}{% endblock %}
+
+{% block contenido %}
+<section class="tarjeta">
+  <header class="encabezado-seccion">
+    <div>
+      <h1>{{ comida.descripcion }}</h1>
+      <p class="texto-secundario">
+        {{ comida.fecha }}{% if comida.hora %} · {{ comida.hora|time:"H:i" }}{% endif %}
+        · {{ comida.get_origen_display }}
+      </p>
+    </div>
+    <div class="comida-totales">
+      <strong>{{ totales.calorias }} kcal</strong>
+      <small>
+        P {{ totales.proteinas }} g · C {{ totales.carbohidratos }} g ·
+        G {{ totales.grasas }} g
+      </small>
+    </div>
+  </header>
+
+  <div class="tabla-responsiva">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Alimento</th><th>Cantidad</th><th>Preparación</th>
+          <th>kcal</th><th>Proteínas</th><th>Carbohidratos</th><th>Grasas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for detalle in comida.detalles.all %}
+          <tr>
+            <td data-titulo="Alimento">
+              {{ detalle.nombre_mostrado }}
+              {% if detalle.es_estimado %}<span class="etiqueta">estimado</span>{% endif %}
+              {% if not detalle.alimento %}
+                <span class="etiqueta etiqueta-alerta">fuera del catálogo</span>
+              {% endif %}
+            </td>
+            <td data-titulo="Cantidad">
+              {{ detalle.cantidad }} {{ detalle.get_unidad_display }}
+              {% if detalle.cantidad_base %}
+                <small class="texto-secundario">
+                  ({{ detalle.cantidad_base }} {{ detalle.unidad_referencia_ref }})
+                </small>
+              {% endif %}
+            </td>
+            <td data-titulo="Preparación">{{ detalle.get_metodo_preparacion_display }}</td>
+            {% if detalle.tiene_datos_nutricionales %}
+              <td data-titulo="kcal">{{ detalle.calorias }}</td>
+              <td data-titulo="Proteínas">{{ detalle.proteinas }} g</td>
+              <td data-titulo="Carbohidratos">{{ detalle.carbohidratos }} g</td>
+              <td data-titulo="Grasas">{{ detalle.grasas }} g</td>
+            {% else %}
+              <td colspan="4" class="sin-datos">
+                Sin datos nutricionales.
+                {% if detalle.observacion %}{{ detalle.observacion }}{% endif %}
+              </td>
+            {% endif %}
+          </tr>
+          {% if detalle.observacion and detalle.tiene_datos_nutricionales %}
+            <tr class="fila-observacion">
+              <td colspan="7"><small>{{ detalle.observacion }}</small></td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if totales.estimado %}
+    <p class="aviso aviso-informativo">
+      Esta comida incluye valores estimados: la porción o la receta pueden
+      variar respecto al catálogo.
+    </p>
+  {% endif %}
+
+  <div class="acciones">
+    <a class="boton boton-secundario" href="{% url 'editar_comida' comida.pk %}">Editar</a>
+    <a class="boton boton-peligro" href="{% url 'eliminar_comida' comida.pk %}">Eliminar</a>
+    <a class="boton boton-secundario" href="{% url 'historial' %}">Volver al historial</a>
+  </div>
+</section>
+{% endblock %}

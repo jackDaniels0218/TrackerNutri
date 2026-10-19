@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block titulo %}Perfil{% endblock %}
+
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>Tu perfil</h1>
+
+  <dl class="datos-cuenta">
+    <dt>Usuario</dt><dd>{{ user.username }}</dd>
+    {% if user.email %}<dt>Correo</dt><dd>{{ user.email }}</dd>{% endif %}
+    <dt>Cuenta creada</dt><dd>{{ user.date_joined|date:"d/m/Y" }}</dd>
+    <dt>Análisis con IA</dt>
+    <dd>{% if ia_disponible %}Configurado{% else %}No configurado (modo manual){% endif %}</dd>
+  </dl>
+
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% for campo in form %}
+      <div class="campo-grupo">
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+        {% if campo.help_text %}<small class="ayuda">{{ campo.help_text }}</small>{% endif %}
+        {% for error in campo.errors %}<small class="error">{{ error }}</small>{% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="boton boton-principal">Guardar</button>
+  </form>
+
+  <p class="texto-secundario">
+    La meta diaria la defines tú. La aplicación no calcula necesidades
+    energéticas ni sustituye el criterio de un profesional de la nutrición.
+  </p>
+</section>
+{% endblock %}

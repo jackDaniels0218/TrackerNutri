@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block titulo %}Confirmar alimentos{% endblock %}
+
+{% block contenido %}
+<section class="tarjeta">
+  <h1>Revisa lo que se detectó</h1>
+  <p class="texto-secundario">
+    Esto es lo que se identificó en tu descripción. <strong>Nada se ha guardado
+    todavía.</strong> Corrige las cantidades y las preparaciones que no
+    coincidan y pulsa «Guardar comida».
+  </p>
+
+  <blockquote class="cita">{{ descripcion }}</blockquote>
+
+  {% if items %}
+    <ul class="lista-avisos">
+      {% for item in items %}
+        {% if item.necesita_confirmacion %}
+          <li class="aviso aviso-advertencia">
+            <strong>{{ item.nombre }}</strong>:
+            {% if not item.cantidad %}
+              no se indicó una cantidad clara, revísala.
+            {% elif not item.alimento_id %}
+              no está en el catálogo, elige un alimento equivalente.
+            {% else %}
+              confirma la cantidad y la preparación.
+            {% endif %}
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post" action="{% url 'confirmar_comida' %}" class="formulario">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <input type="hidden" name="descripcion" value="{{ descripcion }}">
+    <input type="hidden" name="fecha" value="{{ fecha|date:'Y-m-d' }}">
+    <input type="hidden" name="origen" value="{{ origen }}">
+
+    {% if formset.non_form_errors %}
+      <p class="aviso aviso-error">{{ formset.non_form_errors|join:" " }}</p>
+    {% endif %}
+
+    <div class="tabla-responsiva">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Alimento del catálogo</th>
+            <th>Nombre</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+            <th>Preparación</th>
+            <th>Quitar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for form in formset %}
+            <tr>
+              {% for campo_oculto in form.hidden_fields %}{{ campo_oculto }}{% endfor %}
+              <td data-titulo="Alimento">{{ form.alimento }}</td>
+              <td data-titulo="Nombre">{{ form.nombre_mostrado }}</td>
+              <td data-titulo="Cantidad">
+                {{ form.cantidad }}
+                {% for error in form.cantidad.errors %}
+                  <small class="error">{{ error }}</small>
+                {% endfor %}
+              </td>
+              <td data-titulo="Unidad">{{ form.unidad }}</td>
+              <td data-titulo="Preparación">{{ form.metodo_preparacion }}</td>
+              <td data-titulo="Quitar">{{ form.DELETE }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="texto-secundario">
+      Si un alimento no está en el catálogo, puedes guardarlo igualmente: se
+      registrará sin valores nutricionales en lugar de inventarlos.
+    </p>
+
+    <div class="acciones">
+      <button type="submit" class="boton boton-principal">Guardar comida</button>
+      <a class="boton boton-secundario" href="{% url 'nueva_comida' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
