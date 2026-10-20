@@ -34,7 +34,7 @@ probadas con pruebas unitarias. Por eso:
 - Catálogo inicial con 22 alimentos y preparaciones colombianas.
 - Panel diario, historial por fecha y gráficos con Chart.js.
 - API REST para las operaciones que la necesitan.
-- 119 pruebas automatizadas.
+- 129 pruebas automatizadas.
 
 Distingue lo que otras aplicaciones confunden: **arepa frita ≠ arepa asada**,
 **carne frita ≠ carne asada**, los líquidos se miden en mililitros y "una
@@ -83,6 +83,9 @@ python manage.py createsuperuser
 python manage.py cargar_datos_demo
 #   → usuario: demo   contraseña: demo12345
 
+# Comprobar que la integración con la IA funciona de verdad (llama a la API)
+python manage.py probar_ia
+
 # Ejecutar todas las pruebas
 python manage.py test
 
@@ -97,20 +100,60 @@ python manage.py test core.tests.test_nutrition
 **La aplicación funciona sin esto.** Sin clave, el botón «Analizar»
 desaparece y queda el registro manual, que calcula exactamente lo mismo.
 
+> **Una suscripción de ChatGPT no sirve.** La clave de API es un producto
+> distinto, con facturación aparte. Tener ChatGPT —incluso de pago— no da
+> acceso a la API: hay que cargar saldo en la plataforma de desarrolladores.
+
 Para activar la interpretación por IA:
 
-1. Consigue una clave en https://platform.openai.com/api-keys
+1. Consigue una clave en https://platform.openai.com/api-keys (empieza por `sk-`).
 2. Ponla en tu archivo `.env`:
 
    ```
    OPENAI_API_KEY=sk-...
    ```
 
-3. Reinicia el servidor.
+3. Comprueba que todo funciona **de verdad**:
+
+   ```bash
+   python manage.py probar_ia
+   ```
 
 La clave se lee de una variable de entorno, nunca se escribe en el código ni
 viaja al navegador. Solo se envía la descripción de la comida: ni tu nombre,
 ni tu correo, ni tu perfil salen del servidor.
+
+### Verificar la integración: `probar_ia`
+
+Las pruebas automatizadas simulan la IA. Este comando la llama **de verdad**,
+y por eso no forma parte de `manage.py test`: consume crédito.
+
+```bash
+python manage.py probar_ia                    # prueba completa
+python manage.py probar_ia --solo-modelos     # solo clave y modelos, no analiza
+python manage.py probar_ia --texto "dos huevos fritos y una arepa asada"
+```
+
+Comprueba cuatro cosas en orden y se detiene en la primera que falle:
+
+1. Que haya una clave configurada (y si no, explica cómo conseguirla).
+2. Que la clave sea válida y que el modelo de `OPENAI_MODEL` exista en tu
+   cuenta. **Si no existe, te lista los que sí tienes disponibles.**
+3. Que el modelo devuelva el JSON con la estructura esperada.
+4. Que los alimentos se emparejen con el catálogo y los nutrientes se calculen.
+
+Salida de ejemplo cuando todo va bien:
+
+```
+  «arepa»  1 unidad  [frito]
+  OK  Catálogo: Arepa de maíz (frito)
+      280.0 kcal · P 4.5 g · C 39.0 g · G 12.0 g  (estimado)
+
+  TOTAL CALCULADO: 280.0 kcal
+```
+
+Nunca imprime la clave completa (solo los primeros y últimos caracteres), así
+que se puede usar para demostrar en vivo sin exponer el secreto.
 
 ---
 
@@ -182,15 +225,17 @@ TrackerNutri/
 │   │   └── catalogo_alimentos.json   22 alimentos colombianos
 │   │
 │   ├── management/commands/
-│   │   └── cargar_datos_demo.py   Datos para la sustentación
+│   │   ├── cargar_datos_demo.py   Datos para la sustentación
+│   │   └── probar_ia.py           Verifica la IA contra la API real
 │   │
-│   └── tests/                     119 pruebas
+│   └── tests/                     129 pruebas
 │       ├── test_nutrition.py      Motor de cálculo
 │       ├── test_parser.py         Normalización y emparejamiento
 │       ├── test_ai_service.py     IA (con respuestas simuladas)
 │       ├── test_vistas.py         Páginas, permisos y gráficos
 │       ├── test_api.py            Endpoints REST
-│       └── test_persistencia.py   Datos tras reiniciar
+│       ├── test_persistencia.py   Datos tras reiniciar
+│       └── test_comandos.py       Comandos de manage.py
 │
 ├── templates/                     Plantillas HTML
 ├── static/css/estilos.css         Estilos (sin framework, adaptados a móvil)
@@ -266,7 +311,7 @@ Conviene decirlas en voz alta antes que esconderlas:
 python manage.py test
 ```
 
-**119 pruebas**, organizadas en seis archivos. Cubren los 17 escenarios
+**129 pruebas**, organizadas en siete archivos. Cubren los 17 escenarios
 exigidos en el enunciado:
 
 | # | Escenario | Dónde |
