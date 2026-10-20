@@ -137,6 +137,20 @@ class Command(BaseCommand):
 
         try:
             items = ai_service.analizar_texto(texto)
+        except ai_service.IASinSaldo as exc:
+            self._fallo("La cuenta no tiene saldo de API disponible.")
+            self._nota("")
+            self._nota("La clave es válida y el modelo existe, pero generar")
+            self._nota("texto se cobra y la cuenta no tiene crédito.")
+            self._nota("Listar los modelos es gratis; por eso los pasos 1 y 2")
+            self._nota("sí pasaron.")
+            self._nota("")
+            self._nota("Carga saldo en:")
+            self._nota("  https://platform.openai.com/settings/organization/billing")
+            self._nota("")
+            self._nota("Reintentar no sirve de nada hasta que haya crédito.")
+            self._nota(f"Mensaje que vería el usuario: {exc.mensaje_usuario}")
+            return False
         except ai_service.ErrorIA as exc:
             self._fallo(f"{type(exc).__name__}: {exc}")
             self._nota(f"Mensaje que vería el usuario: {exc.mensaje_usuario}")

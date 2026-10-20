@@ -34,7 +34,7 @@ probadas con pruebas unitarias. Por eso:
 - Catálogo inicial con 22 alimentos y preparaciones colombianas.
 - Panel diario, historial por fecha y gráficos con Chart.js.
 - API REST para las operaciones que la necesitan.
-- 129 pruebas automatizadas.
+- 132 pruebas automatizadas.
 
 Distingue lo que otras aplicaciones confunden: **arepa frita ≠ arepa asada**,
 **carne frita ≠ carne asada**, los líquidos se miden en mililitros y "una
@@ -103,6 +103,11 @@ desaparece y queda el registro manual, que calcula exactamente lo mismo.
 > **Una suscripción de ChatGPT no sirve.** La clave de API es un producto
 > distinto, con facturación aparte. Tener ChatGPT —incluso de pago— no da
 > acceso a la API: hay que cargar saldo en la plataforma de desarrolladores.
+>
+> Ojo con un detalle que despista: **listar los modelos es gratis, pero
+> generar texto se cobra.** Con una clave válida y sin saldo, la conexión
+> parece correcta hasta que se pide el primer análisis y responde un error
+> 429. El comando `probar_ia` distingue ese caso y lo dice con claridad.
 
 Para activar la interpretación por IA:
 
@@ -228,7 +233,7 @@ TrackerNutri/
 │   │   ├── cargar_datos_demo.py   Datos para la sustentación
 │   │   └── probar_ia.py           Verifica la IA contra la API real
 │   │
-│   └── tests/                     129 pruebas
+│   └── tests/                     132 pruebas
 │       ├── test_nutrition.py      Motor de cálculo
 │       ├── test_parser.py         Normalización y emparejamiento
 │       ├── test_ai_service.py     IA (con respuestas simuladas)
@@ -311,7 +316,7 @@ Conviene decirlas en voz alta antes que esconderlas:
 python manage.py test
 ```
 
-**129 pruebas**, organizadas en siete archivos. Cubren los 17 escenarios
+**132 pruebas**, organizadas en siete archivos. Cubren los 17 escenarios
 exigidos en el enunciado:
 
 | # | Escenario | Dónde |

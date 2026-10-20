@@ -105,6 +105,22 @@ class IANoDisponible(ErrorIA):
     )
 
 
+class IASinSaldo(ErrorIA):
+    """
+    La cuenta no tiene crédito de API disponible.
+
+    OpenAI responde 429 tanto cuando se hacen demasiadas peticiones como
+    cuando se agotó el saldo, y el SDK convierte ambos casos en el mismo
+    RateLimitError. Conviene separarlos: ante un límite de velocidad tiene
+    sentido reintentar, pero sin saldo el reintento no servirá nunca.
+    """
+
+    mensaje_usuario = (
+        "La cuenta de OpenAI no tiene saldo de API disponible. "
+        "Registra la comida manualmente mientras se recarga."
+    )
+
+
 class RespuestaIAInvalida(ErrorIA):
     """La respuesta no cumple el esquema esperado."""
 
@@ -124,6 +140,27 @@ class TextoNoInterpretable(ErrorIA):
 
 
 # --- API pública del módulo --------------------------------------------------
+
+
+def _es_falta_de_saldo(error) -> bool:
+    """
+    ¿Este 429 es por falta de saldo o por exceso de peticiones?
+
+    OpenAI marca el primero con el código `insufficient_quota`. Se busca en
+    el atributo `code`, en el cuerpo de la respuesta y, como último recurso,
+    en el texto del error, porque la forma exacta cambia entre versiones del
+    SDK.
+    """
+    if getattr(error, "code", None) == "insufficient_quota":
+        return True
+
+    cuerpo = getattr(error, "body", None)
+    if isinstance(cuerpo, dict):
+        detalle = cuerpo.get("error")
+        if isinstance(detalle, dict) and detalle.get("code") == "insufficient_quota":
+            return True
+
+    return "insufficient_quota" in str(error)
 
 
 def ia_configurada() -> bool:
@@ -268,6 +305,9 @@ def interpretar_comida(texto: str) -> list[dict]:
         logger.warning("Tiempo de espera agotado al llamar a la API de IA.")
         raise IANoDisponible("Tiempo de espera agotado.") from exc
     except openai.RateLimitError as exc:
+        if _es_falta_de_saldo(exc):
+            logger.error("La cuenta de la API de IA se quedó sin saldo.")
+            raise IASinSaldo("Sin saldo de API disponible.") from exc
         logger.warning("Límite de uso de la API de IA alcanzado.")
         raise IANoDisponible("Límite de uso alcanzado.") from exc
     except openai.AuthenticationError as exc:

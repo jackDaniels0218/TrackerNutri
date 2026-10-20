@@ -164,3 +164,39 @@ class ProbarIaConClaveTests(TestCase):
         call_command("probar_ia", "--solo-modelos", stdout=salida)
         self.assertNotIn("TOTAL CALCULADO", salida.getvalue())
         cliente_falso.return_value.chat.completions.create.assert_not_called()
+
+
+@override_settings(OPENAI_API_KEY="sk-clave-de-prueba-1234", OPENAI_MODEL="gpt-4o-mini")
+class ProbarIaSinSaldoTests(TestCase):
+    """
+    Caso real encontrado al probar con una clave nueva: la clave es válida y
+    el modelo existe (listar modelos es gratis), pero generar texto falla con
+    429 por falta de crédito. El comando debe decir eso, no «inténtalo de
+    nuevo», porque reintentar no va a funcionar.
+    """
+
+    fixtures = ["catalogo_alimentos.json"]
+
+    @patch("openai.OpenAI")
+    def test_explica_que_falta_saldo_y_no_sugiere_reintentar(self, cliente_falso):
+        import openai
+
+        respuesta_http = MagicMock()
+        respuesta_http.status_code = 429
+        respuesta_http.headers = {}
+        cliente_falso.return_value.models.list.return_value = [_modelo("gpt-4o-mini")]
+        cliente_falso.return_value.chat.completions.create.side_effect = (
+            openai.RateLimitError(
+                "You exceeded your current quota.",
+                response=respuesta_http,
+                body={"error": {"code": "insufficient_quota"}},
+            )
+        )
+
+        salida = StringIO()
+        call_command("probar_ia", stdout=salida)
+        texto = salida.getvalue()
+
+        self.assertIn("no tiene saldo", texto)
+        self.assertIn("billing", texto)
+        self.assertIn("Reintentar no sirve", texto)

@@ -216,17 +216,54 @@ class LlamadaSimuladaTests(TestCase):
             ai_service.interpretar_comida("una arepa")
         self.assertIn("manual", ctx.exception.mensaje_usuario)
 
-    @patch("openai.OpenAI")
-    def test_limite_de_uso_alcanzado(self, cliente_falso):
+    def _error_429(self, cuerpo=None, mensaje="limite"):
+        """Construye un RateLimitError como el que devuelve el SDK."""
         import openai
 
         respuesta_http = MagicMock()
         respuesta_http.status_code = 429
         respuesta_http.headers = {}
+        return openai.RateLimitError(
+            mensaje, response=respuesta_http, body=cuerpo
+        )
+
+    @patch("openai.OpenAI")
+    def test_limite_de_uso_alcanzado(self, cliente_falso):
+        """Un 429 por exceso de peticiones: tiene sentido reintentar."""
         cliente_falso.return_value.chat.completions.create.side_effect = (
-            openai.RateLimitError(
-                "limite", response=respuesta_http, body=None
-            )
+            self._error_429()
         )
         with self.assertRaises(ai_service.IANoDisponible):
+            ai_service.interpretar_comida("una arepa")
+
+    @patch("openai.OpenAI")
+    def test_falta_de_saldo_no_se_confunde_con_el_limite_de_uso(self, cliente_falso):
+        """
+        OpenAI devuelve 429 tanto por exceso de peticiones como por falta de
+        saldo. Son problemas distintos: reintentar solo sirve en el primero.
+        """
+        cliente_falso.return_value.chat.completions.create.side_effect = (
+            self._error_429(
+                cuerpo={
+                    "error": {
+                        "code": "insufficient_quota",
+                        "message": "You exceeded your current quota.",
+                    }
+                },
+                mensaje="You exceeded your current quota.",
+            )
+        )
+        with self.assertRaises(ai_service.IASinSaldo) as ctx:
+            ai_service.interpretar_comida("una arepa")
+        self.assertIn("saldo", ctx.exception.mensaje_usuario)
+        # Y sigue ofreciendo la salida manual.
+        self.assertIn("manual", ctx.exception.mensaje_usuario)
+
+    @patch("openai.OpenAI")
+    def test_falta_de_saldo_detectada_por_el_atributo_code(self, cliente_falso):
+        """El SDK puede exponer el código como atributo en lugar de en el cuerpo."""
+        error = self._error_429()
+        error.code = "insufficient_quota"
+        cliente_falso.return_value.chat.completions.create.side_effect = error
+        with self.assertRaises(ai_service.IASinSaldo):
             ai_service.interpretar_comida("una arepa")

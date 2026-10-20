@@ -92,7 +92,14 @@ class AnalizarComidaView(APIView):
         except ai_service.ErrorIA as exc:
             codigo = (
                 status.HTTP_503_SERVICE_UNAVAILABLE
-                if isinstance(exc, (ai_service.IANoDisponible, ai_service.IANoConfigurada))
+                if isinstance(
+                    exc,
+                    (
+                        ai_service.IANoDisponible,
+                        ai_service.IANoConfigurada,
+                        ai_service.IASinSaldo,
+                    ),
+                )
                 else status.HTTP_422_UNPROCESSABLE_ENTITY
             )
             return Response(
