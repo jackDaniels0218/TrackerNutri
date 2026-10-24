@@ -61,6 +61,15 @@ def no_leidas(usuario) -> int:
     return Notificacion.objects.filter(destinatario=usuario, leida=False).count()
 
 
+def _en_ventana(hora, inicio, fin, ventana_minutos: int) -> bool:
+    """La ventana puede cruzar la medianoche (por ejemplo, de 23:50 a 00:20)."""
+    if ventana_minutos >= 24 * 60:
+        return True
+    if inicio <= fin:
+        return inicio <= hora <= fin
+    return hora >= inicio or hora <= fin
+
+
 def generar_recordatorios(momento=None, ventana_minutos: int = 30) -> int:
     """
     Crea los recordatorios de registro cuya hora cae en la ventana actual.
@@ -78,7 +87,7 @@ def generar_recordatorios(momento=None, ventana_minutos: int = 30) -> int:
         cuenta = getattr(r.usuario, "cuenta", None)
         if cuenta is None or cuenta.seguimiento_pausado or cuenta.estado != EstadoCuenta.ACTIVO:
             continue
-        if not (inicio <= r.hora <= fin):
+        if not _en_ventana(r.hora, inicio, fin, ventana_minutos):
             continue
         titulo = f"Recordatorio de las {r.hora:%H:%M}"
         if Notificacion.objects.filter(destinatario=r.usuario, titulo=titulo, creada_en__date=momento.date()).exists():

@@ -132,7 +132,9 @@ def alimentos(request):
 
 
 def _guardar_con_historial(request, form, descripcion_nuevo, descripcion_edicion):
-    antes = curacion.instantanea(form.instance) if form.instance.pk else None
+    # is_valid() ya copió los datos nuevos a form.instance: el valor anterior se lee de la base.
+    instancia = form.instance
+    antes = curacion.instantanea(type(instancia).objects.get(pk=instancia.pk)) if instancia.pk else None
     with transaction.atomic():
         obj = form.save()
         curacion.registrar_cambio(obj, (descripcion_edicion if antes else descripcion_nuevo).format(obj=obj),
@@ -184,7 +186,7 @@ def preparacion_editar(request, pk=None):
     form = PreparacionForm(request.POST or None, instance=preparacion if pk else None)
     componentes = ComponentesFormSet(request.POST or None, instance=preparacion if pk else Preparacion(), prefix="cmp")
     if request.method == "POST" and form.is_valid() and componentes.is_valid():
-        antes = curacion.instantanea(preparacion) if pk else None
+        antes = curacion.instantanea(Preparacion.objects.get(pk=pk)) if pk else None
         with transaction.atomic():
             obj = form.save()
             componentes.instance = obj
