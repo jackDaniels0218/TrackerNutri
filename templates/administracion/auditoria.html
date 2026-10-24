@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block titulo %}Auditoría{% endblock %}
+{% block contenido %}
+<h1>Trazabilidad y auditoría</h1>
+<p class="texto-secundario">Registros de solo consulta: no se pueden editar ni eliminar. No incluyen el contenido de las comidas.</p>
+<nav class="pestanas">
+  <a href="?ver=bitacora" {% if ver == "bitacora" %}class="activo"{% endif %}>Bitácora</a>
+  <a href="?ver=consentimientos" {% if ver == "consentimientos" %}class="activo"{% endif %}>Consentimientos</a>
+  <a href="?ver=metas" {% if ver == "metas" %}class="activo"{% endif %}>Historial de metas</a>
+  <a href="?ver=catalogo" {% if ver == "catalogo" %}class="activo"{% endif %}>Historial del catálogo</a>
+</nav>
+<form method="get" class="acciones" style="margin-top:0"><input type="hidden" name="ver" value="{{ ver }}">
+  {% if ver == "bitacora" %}<input class="campo" style="max-width:220px" name="q" value="{{ q }}" placeholder="Acción o entidad" aria-label="Acción o entidad">{% endif %}
+  {% if ver != "metas" %}<input class="campo" style="max-width:220px" name="usuario" value="{{ filtro_usuario }}" placeholder="Correo del usuario" aria-label="Usuario">{% endif %}
+  <input class="campo" style="max-width:170px" type="date" name="desde" value="{{ desde }}" aria-label="Desde"><input class="campo" style="max-width:170px" type="date" name="hasta" value="{{ hasta }}" aria-label="Hasta">
+  <button class="boton boton-secundario" type="submit">Filtrar</button></form>
+<section class="tarjeta"><div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+{% if ver == "bitacora" %}
+  <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th><th>IP</th></tr></thead>
+  <tbody>{% for b in pagina %}<tr><td data-titulo="Fecha">{{ b.fecha|date:"d/m/Y H:i:s" }}</td><td data-titulo="Usuario">{{ b.usuario.email|default:"sistema" }}</td><td data-titulo="Acción"><code>{{ b.accion }}</code></td>
+    <td data-titulo="Entidad">{{ b.entidad }} {{ b.entidad_id }}</td><td data-titulo="Detalle" class="pequeno">{{ b.detalle }}</td><td data-titulo="IP">{{ b.ip|default:"—" }}</td></tr>{% endfor %}</tbody>
+{% elif ver == "consentimientos" %}
+  <thead><tr><th>Fecha</th><th>Usuario</th><th>Autorización</th><th>Decisión</th><th>Versión del texto</th><th>IP</th></tr></thead>
+  <tbody>{% for c in pagina %}<tr><td data-titulo="Fecha">{{ c.fecha|date:"d/m/Y H:i" }}</td><td data-titulo="Usuario">{{ c.usuario.email|default:"(cuenta eliminada)" }}</td><td data-titulo="Autorización">{{ c.get_tipo_display }}</td>
+    <td data-titulo="Decisión">{{ c.otorgado|yesno:"otorgada,no otorgada / retirada" }}</td><td data-titulo="Versión">{{ c.version_texto }}</td><td data-titulo="IP">{{ c.ip|default:"—" }}</td></tr>{% endfor %}</tbody>
+{% elif ver == "metas" %}
+  <thead><tr><th>Fecha</th><th>Usuario</th><th>Origen</th><th class="num">Meta</th><th>Vigente</th></tr></thead>
+  <tbody>{% for m in pagina %}<tr><td data-titulo="Fecha">{{ m.creada_en|date:"d/m/Y H:i" }}</td><td data-titulo="Usuario">#{{ m.usuario_id }}</td><td data-titulo="Origen">{{ m.get_origen_display }}{% if m.revertida %} (revertida){% endif %}</td>
+    <td class="num" data-titulo="Meta">{{ m.kcal_dia|floatformat:0 }} kcal</td><td data-titulo="Vigente">{{ m.vigente|yesno:"sí,no" }}</td></tr>{% endfor %}</tbody>
+{% else %}
+  <thead><tr><th>Fecha</th><th>Versión</th><th>Entidad</th><th>Cambio</th><th>Quién</th></tr></thead>
+  <tbody>{% for c in pagina %}<tr><td data-titulo="Fecha">{{ c.fecha|date:"d/m/Y H:i" }}</td><td data-titulo="Versión">v{{ c.version.numero }}</td><td data-titulo="Entidad">{{ c.entidad }} {{ c.entidad_id }}</td>
+    <td data-titulo="Cambio">{{ c.descripcion }}</td><td data-titulo="Quién">{{ c.usuario.email|default:"sistema" }}</td></tr>{% endfor %}</tbody>
+{% endif %}
+</table></div>
+{% if pagina.has_other_pages %}<nav class="paginacion">{% if pagina.has_previous %}<a class="boton boton-secundario boton-pequeno" href="?ver={{ ver }}&q={{ q|urlencode }}&usuario={{ filtro_usuario|urlencode }}&desde={{ desde }}&hasta={{ hasta }}&pagina={{ pagina.previous_page_number }}">←</a>{% endif %}
+  <span class="texto-secundario">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+  {% if pagina.has_next %}<a class="boton boton-secundario boton-pequeno" href="?ver={{ ver }}&q={{ q|urlencode }}&usuario={{ filtro_usuario|urlencode }}&desde={{ desde }}&hasta={{ hasta }}&pagina={{ pagina.next_page_number }}">→</a>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}

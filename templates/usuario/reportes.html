@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Reportes{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div><h1>Tendencias</h1><p class="texto-secundario">Calculadas con tus registros confirmados. Las cifras son estimaciones con su rango.</p></div>
+  <div class="acciones" style="margin:0">
+    <a class="boton boton-secundario boton-pequeno" href="{% url 'reporte_csv' %}">Exportar CSV</a>
+    <a class="boton boton-secundario boton-pequeno" href="{% url 'reporte_imprimir' %}?dias={{ dias }}">Informe para PDF</a>
+  </div>
+</div>
+<nav class="pestanas" aria-label="Periodo">{% for p in periodos %}<a href="?dias={{ p }}" {% if p == dias %}class="activo" aria-current="page"{% endif %}>{{ p }} días</a>{% endfor %}</nav>
+{% if series.tiene_datos %}
+<div class="rejilla-2">
+  <section class="tarjeta"><h2>Energía frente a la meta</h2><p class="texto-secundario pequeno">Con media móvil de 7 días y el rango de estimación sombreado.</p><div class="grafico"><canvas id="g-ingesta" role="img" aria-label="Energía diaria frente a la meta"></canvas></div></section>
+  <section class="tarjeta"><h2>Peso y peso tendencial</h2><div class="grafico"><canvas id="g-peso" role="img" aria-label="Peso"></canvas></div></section>
+  <section class="tarjeta"><h2>Macronutrientes por día</h2><div class="grafico"><canvas id="g-macros" role="img" aria-label="Macronutrientes"></canvas></div></section>
+  <section class="tarjeta"><h2>Azúcares por día</h2><div class="grafico"><canvas id="g-azucar" role="img" aria-label="Azúcares"></canvas></div>
+    {% if series.fuentes_azucar %}<p class="texto-secundario pequeno">Principales fuentes: {% for f in series.fuentes_azucar %}{{ f.nombre }} ({{ f.g|floatformat:0 }} g){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}</section>
+  <section class="tarjeta"><h2>Aceite absorbido por semana</h2><div class="grafico"><canvas id="g-aceite" role="img" aria-label="Aceite absorbido"></canvas></div>
+    {% if series.fuentes_aceite %}<p class="texto-secundario pequeno">Fritos que más aportan: {% for f in series.fuentes_aceite %}{{ f.nombre }} ({{ f.g|floatformat:0 }} g){% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}</section>
+  <section class="tarjeta"><h2>Cumplimiento semanal y evolución de la meta</h2>
+    <div class="grafico"><canvas id="g-cumplimiento" role="img" aria-label="Cumplimiento semanal"></canvas></div>
+    <div class="grafico" style="margin-top:12px"><canvas id="g-meta" role="img" aria-label="Evolución de la meta"></canvas></div>
+    <p class="texto-secundario pequeno">Cumplimiento: % de días completos con energía dentro de ±10 % de la meta.</p></section>
+</div>
+{{ series|json_script:"datos-series" }}
+{% else %}
+<section class="tarjeta vacio"><p>Todavía no hay registros en este periodo. Cuando registres comidas y pesajes, aquí verás tus tendencias.</p>
+  <a class="boton boton-principal" href="{% url 'comida_nueva' %}">Registrar una comida</a></section>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if series.tiene_datos %}
+<script src="{% static 'js/vendor/chart.umd.js' %}"></script><script src="{% static 'js/graficos.js' %}"></script>
+<script>
+  (function () {
+    var s = JSON.parse(document.getElementById("datos-series").textContent), o = {{ ocultar_cifras|yesno:"true,false" }}, G = NutriGraficos;
+    G.ingesta("g-ingesta", s, o); G.peso("g-peso", s, o); G.macros("g-macros", s, o);
+    G.barras("g-azucar", s.etiquetas, s.azucares, "Azúcares (g)", G.colores.morado, o);
+    G.barras("g-aceite", s.aceite_semanal.etiquetas, s.aceite_semanal.g, "Aceite absorbido (g)", G.colores.naranja, o);
+    G.barras("g-cumplimiento", s.cumplimiento.etiquetas, s.cumplimiento.pct, "Cumplimiento (%)", G.colores.verde, false);
+    G.evolucionMeta("g-meta", s.evolucion_meta, o);
+  })();
+</script>
+{% endif %}{% endblock %}

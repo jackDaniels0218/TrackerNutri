@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static nutri %}
+{% block titulo %}Hoy{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div>
+    <h1>{% if es_hoy %}Hoy{% else %}{{ fecha|date:"l j \d\e F" }}{% endif %}</h1>
+    <p class="texto-secundario">{{ fecha|date:"j \d\e F \d\e Y" }}</p>
+  </div>
+  <div class="acciones" style="margin:0">
+    <a class="boton boton-secundario boton-pequeno" href="?fecha={{ dia_anterior|date:'Y-m-d' }}">← Anterior</a>
+    {% if not es_hoy %}<a class="boton boton-secundario boton-pequeno" href="{% url 'panel' %}">Hoy</a>{% endif %}
+    <a class="boton boton-secundario boton-pequeno" href="?fecha={{ dia_siguiente|date:'Y-m-d' }}">Siguiente →</a>
+  </div>
+</div>
+
+{% for alerta in alertas %}
+  <div class="aviso aviso-cuidado" role="alert"><strong>{{ alerta.titulo }}.</strong> {{ alerta.mensaje }}</div>
+{% endfor %}
+{% if resumen.meta.solo_informativa %}
+  <div class="aviso aviso-cuidado">Tu seguimiento es informativo: no se aplica déficit calórico. {{ contacto }}</div>
+{% endif %}
+{% if pendiente %}
+  <div class="aviso aviso-advertencia">Tienes una comida sin confirmar («{{ pendiente.texto_original|truncatechars:60 }}»). <a href="{% url 'comida_confirmar' pendiente.pk %}">Revisarla</a></div>
+{% endif %}
+
+<a class="boton boton-principal" href="{% url 'comida_nueva' %}?fecha={{ fecha|date:'Y-m-d' }}" style="width:100%;margin-bottom:16px;font-size:1.05rem">＋ ¿Qué comiste?</a>
+
+<section class="indicadores" aria-label="Resumen del día">
+  <div class="indicador">
+    <div class="etiqueta-ind">Consumido</div>
+    <div class="valor">{{ resumen.kcal|cifra:ocultar_cifras|entero }} <small>kcal</small></div>
+    {% if resumen.numero_comidas and not ocultar_cifras %}<div class="detalle">entre {{ resumen.kcal_min|entero }} y {{ resumen.kcal_max|entero }} kcal</div>{% endif %}
+  </div>
+  <div class="indicador">
+    <div class="etiqueta-ind">Meta</div>
+    <div class="valor">{% if resumen.meta_kcal %}{{ resumen.meta_kcal|cifra:ocultar_cifras|entero }} <small>kcal</small>{% else %}—{% endif %}</div>
+    <div class="detalle"><a href="{% url 'metas' %}">Ver cómo se calcula</a></div>
+  </div>
+  {% if resumen.meta_superada %}
+  <div class="indicador indicador-alerta">
+    <div class="etiqueta-ind">Por encima de la meta</div>
+    <div class="valor">{% if ocultar_cifras %}—{% else %}+{{ resumen.exceso|entero }} <small>kcal</small>{% endif %}</div>
+    <div class="detalle">Un día así no se compensa restringiendo los siguientes.</div>
+  </div>
+  {% else %}
+  <div class="indicador">
+    <div class="etiqueta-ind">Te quedan</div>
+    <div class="valor">{{ resumen.restantes|cifra:ocultar_cifras|entero }} <small>kcal</small></div>
+  </div>
+  {% endif %}
+  <div class="indicador">
+    <div class="etiqueta-ind">Avance</div>
+    <div class="valor">{% if resumen.porcentaje is not None %}{{ resumen.porcentaje|entero }} <small>%</small>{% else %}—{% endif %}</div>
+    <div class="barra {% if resumen.meta_superada %}exceso{% endif %}"><span style="width:{% if resumen.porcentaje and resumen.porcentaje > 100 %}100{% else %}{{ resumen.porcentaje|default:0|entero }}{% endif %}%"></span></div>
+  </div>
+</section>
+
+<section class="indicadores">
+  <div class="indicador"><div class="etiqueta-ind">Proteínas</div><div class="valor">{{ resumen.proteinas|entero }} <small>g{% if resumen.meta %} de {{ resumen.meta.proteinas_g|entero }}{% endif %}</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Carbohidratos</div><div class="valor">{{ resumen.carbohidratos|entero }} <small>g{% if resumen.meta %} de {{ resumen.meta.carbohidratos_g|entero }}{% endif %}</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Grasas</div><div class="valor">{{ resumen.grasas|entero }} <small>g{% if resumen.meta %} de {{ resumen.meta.grasas_g|entero }}{% endif %}</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Azúcares</div><div class="valor">{{ resumen.azucares|entero }} <small>g</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Aceite estimado</div><div class="valor">{{ resumen.aceite|entero }} <small>g</small></div></div>
+</section>
+
+<section class="tarjeta">
+  <div class="encabezado" style="margin-bottom:8px">
+    <h2 style="margin:0">Comidas del día</h2>
+    <form method="post" action="{% url 'marcar_dia' %}" class="formulario-en-linea">{% csrf_token %}
+      <input type="hidden" name="fecha" value="{{ fecha|date:'Y-m-d' }}">
+      <button class="boton {% if resumen.dia_completo %}boton-principal{% else %}boton-secundario{% endif %} boton-pequeno" type="submit">
+        {% if resumen.dia_completo %}✓ Día completo{% else %}Marcar día como completo{% endif %}
+      </button>
+    </form>
+  </div>
+  <p class="texto-secundario pequeno">Marca el día como completo cuando hayas registrado todo: así las alertas y el ajuste semanal solo usan días con información completa.</p>
+  {% if resumen.comidas %}
+    <ul class="lista-limpia lista-filas">
+    {% for comida in resumen.comidas %}
+      <li>
+        <div>
+          <a href="{% url 'comida_detalle' comida.pk %}"><strong>{{ comida.get_tipo_display }}</strong></a>
+          <span class="texto-secundario pequeno">· {{ comida.fecha_hora|time:"H:i" }} · {{ comida.get_origen_display }}{% if comida.estado == "editada" %} · editada{% endif %}</span>
+          <p class="texto-secundario pequeno" style="margin:2px 0">{% for item in comida.items.all %}{% if not item.descartado %}{{ item.nombre_mostrado }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}</p>
+        </div>
+        <div style="text-align:right">
+          <strong>{{ comida.kcal|cifra:ocultar_cifras|entero }} kcal</strong>
+          <span class="etiqueta confianza-{{ comida.confianza|confianza }}">confianza {{ comida.confianza|confianza }}</span>
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <div class="vacio">
+      <p>Aún no hay comidas registradas este día.</p>
+      <p class="pequeno">Escribe lo que comiste con tus palabras, por ejemplo «una arepa con huevo y un tinto».</p>
+      <a class="boton boton-secundario" href="{% url 'comida_manual' %}">Prefiero buscar en el catálogo</a>
+    </div>
+  {% endif %}
+</section>
+
+{% if series.tiene_datos %}
+<section class="tarjeta">
+  <h2>Últimos 7 días</h2>
+  <div class="grafico"><canvas id="grafico-semana" aria-label="Energía de los últimos 7 días frente a la meta" role="img"></canvas></div>
+</section>
+{{ series|json_script:"datos-series" }}
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if series.tiene_datos %}
+<script src="{% static 'js/vendor/chart.umd.js' %}"></script>
+<script src="{% static 'js/graficos.js' %}"></script>
+<script>NutriGraficos.ingesta("grafico-semana", JSON.parse(document.getElementById("datos-series").textContent), {{ ocultar_cifras|yesno:"true,false" }});</script>
+{% endif %}
+{% endblock %}

@@ -1,32 +1,111 @@
 """
-Rutas de la aplicación core.
+Rutas de NutriRegional, agrupadas por rol y por módulo del SRS.
 
-Arriba las páginas web (devuelven HTML); abajo, bajo /api/, los endpoints
-REST que consume JavaScript.
+Los nombres de ruta son los que usa core/requerimientos.py para enlazar cada
+requerimiento con su pantalla; una prueba comprueba que todos existen.
 """
 
-from django.urls import path
+from django.contrib.auth import views as auth_views
+from django.urls import include, path
 
-from core import api, views
+from core.views import acceso, administracion, comidas, cuenta, curacion, seguimiento
 
 urlpatterns = [
-    # --- Páginas web ---------------------------------------------------------
-    path("", views.panel, name="panel"),
-    path("registro/", views.registro_usuario, name="registro"),
-    path("perfil/", views.perfil, name="perfil"),
-    path("comidas/nueva/", views.nueva_comida, name="nueva_comida"),
-    path("comidas/confirmar/", views.confirmar_comida, name="confirmar_comida"),
-    path("comidas/manual/", views.comida_manual, name="comida_manual"),
-    path("comidas/<int:pk>/", views.detalle_comida, name="detalle_comida"),
-    path("comidas/<int:pk>/editar/", views.editar_comida, name="editar_comida"),
-    path("comidas/<int:pk>/eliminar/", views.eliminar_comida, name="eliminar_comida"),
-    path("historial/", views.historial, name="historial"),
-    # --- API REST ------------------------------------------------------------
-    path("api/alimentos/", api.AlimentoListView.as_view(), name="api_alimentos"),
-    path("api/perfil/", api.PerfilView.as_view(), name="api_perfil"),
-    path("api/analizar/", api.AnalizarComidaView.as_view(), name="api_analizar"),
-    path("api/comidas/", api.ComidaListCreateView.as_view(), name="api_comidas"),
-    path("api/comidas/<int:pk>/", api.ComidaDetailView.as_view(), name="api_comida"),
-    path("api/resumen/", api.resumen_dia, name="api_resumen"),
-    path("api/tendencia/", api.tendencia, name="api_tendencia"),
+    # --- Público y acceso (RF12) -------------------------------------------------
+    path("", acceso.inicio, name="inicio"),
+    path("requerimientos/", acceso.requerimientos, name="requerimientos"),
+    path("legal/politica-de-datos/", acceso.politica_datos, name="politica_datos"),
+    path("legal/aviso-medico/", acceso.aviso_medico, name="aviso_medico"),
+    path("cuentas/login/", acceso.IngresoView.as_view(), name="login"),
+    path("cuentas/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("cuentas/cerrar-sesiones/", acceso.cerrar_sesiones, name="cerrar_sesiones"),
+    path("cuentas/", include("django.contrib.auth.urls")),
+    path("registro/", acceso.registro, name="registro"),
+    path("registro/perfil/", acceso.registro_perfil, name="registro_perfil"),
+    path("registro/meta/", acceso.registro_meta, name="registro_meta"),
+    # --- Usuario: comidas (RF7, RF10, RF13, RF14) -------------------------------
+    path("panel/", comidas.panel, name="panel"),
+    path("panel/dia-completo/", comidas.marcar_dia, name="marcar_dia"),
+    path("comidas/nueva/", comidas.comida_nueva, name="comida_nueva"),
+    path("comidas/manual/", comidas.comida_manual, name="comida_manual"),
+    path("comidas/historial/", comidas.historial, name="historial"),
+    path("comidas/favoritas/", comidas.favoritas, name="favoritas"),
+    path("comidas/favoritas/<int:pk>/repetir/", comidas.favorita_repetir, name="favorita_repetir"),
+    path("comidas/<int:pk>/", comidas.comida_detalle, name="comida_detalle"),
+    path("comidas/<int:pk>/aclarar/", comidas.comida_aclarar, name="comida_aclarar"),
+    path("comidas/<int:pk>/confirmar/", comidas.comida_confirmar, name="comida_confirmar"),
+    path("comidas/<int:pk>/editar/", comidas.comida_confirmar, name="comida_editar"),
+    path("comidas/<int:pk>/eliminar/", comidas.comida_eliminar, name="comida_eliminar"),
+    path("comidas/<int:pk>/favorita/", comidas.comida_favorita, name="comida_favorita"),
+    path("comidas/items/<int:pk>/corregir/", comidas.item_corregir, name="item_corregir"),
+    path("correcciones/", comidas.mis_correcciones, name="mis_correcciones"),
+    # --- Usuario: seguimiento (RF8, RF9, RF15, RF16, RF18) -----------------------
+    path("peso/", seguimiento.peso, name="peso"),
+    path("peso/<int:pk>/editar/", seguimiento.peso_editar, name="peso_editar"),
+    path("peso/<int:pk>/eliminar/", seguimiento.peso_eliminar, name="peso_eliminar"),
+    path("metas/", seguimiento.metas_vista, name="metas"),
+    path("metas/evaluar/", seguimiento.meta_evaluar, name="meta_evaluar"),
+    path("metas/<int:pk>/revertir/", seguimiento.meta_revertir, name="meta_revertir"),
+    path("metas/mantenimiento/", seguimiento.meta_mantenimiento, name="meta_mantenimiento"),
+    path("reportes/", seguimiento.reportes_vista, name="reportes"),
+    path("reportes/exportar.csv", seguimiento.reporte_csv, name="reporte_csv"),
+    path("reportes/imprimir/", seguimiento.reporte_imprimir, name="reporte_imprimir"),
+    path("herramientas/aceite/", seguimiento.calculadora_aceite, name="calculadora_aceite"),
+    # --- Usuario: cuenta (RF1, RF2, RF3, RF17, RF20) -------------------------------
+    path("perfil/", cuenta.perfil, name="perfil"),
+    path("cuenta/", cuenta.cuenta, name="cuenta"),
+    path("privacidad/", cuenta.privacidad, name="privacidad"),
+    path("privacidad/exportar/", cuenta.exportar_datos, name="exportar_datos"),
+    path("privacidad/eliminar-cuenta/", cuenta.eliminar_cuenta, name="eliminar_cuenta"),
+    path("recordatorios/", cuenta.recordatorios, name="recordatorios"),
+    path("notificaciones/", cuenta.notificaciones, name="notificaciones"),
+    path("notificaciones/<int:pk>/leer/", cuenta.notificacion_leer, name="notificacion_leer"),
+    path("mis-alimentos/", cuenta.mis_alimentos, name="mis_alimentos"),
+    path("mis-alimentos/nuevo/", cuenta.mi_alimento, name="mi_alimento_nuevo"),
+    path("mis-alimentos/<int:pk>/", cuenta.mi_alimento, name="mi_alimento_editar"),
+    # --- Curador (RF3–RF6, RF10, RF19) --------------------------------------------
+    path("curacion/", curacion.bandeja, name="curacion"),
+    path("curacion/terminos/<int:pk>/resolver/", curacion.termino_resolver, name="termino_resolver"),
+    path("curacion/terminos/<int:pk>/descartar/", curacion.termino_descartar, name="termino_descartar"),
+    path("curacion/personales/<int:pk>/", curacion.personal_revisar, name="personal_revisar"),
+    path("curacion/correcciones/<int:pk>/", curacion.correccion_revisar, name="correccion_revisar"),
+    path("curacion/versiones/", curacion.versiones, name="versiones"),
+    path("curacion/versiones/publicar/", curacion.version_publicar, name="version_publicar"),
+    path("curacion/cambios/<int:pk>/revertir/", curacion.cambio_revertir, name="cambio_revertir"),
+    path("curacion/exactitud/", curacion.exactitud, name="exactitud"),
+    path("curacion/exactitud/ejecutar/", curacion.exactitud_ejecutar, name="exactitud_ejecutar"),
+    path("curacion/exactitud/frases/nueva/", curacion.frase_editar, name="frase_nueva"),
+    path("curacion/exactitud/frases/<int:pk>/", curacion.frase_editar, name="frase_editar"),
+    path("curacion/indicadores/", curacion.indicadores, name="indicadores"),
+    path("catalogo/alimentos/", curacion.alimentos, name="catalogo_alimentos"),
+    path("catalogo/alimentos/nuevo/", curacion.alimento_editar, name="catalogo_alimento_nuevo"),
+    path("catalogo/alimentos/<int:pk>/", curacion.alimento_editar, name="catalogo_alimento_editar"),
+    path("catalogo/verificar/<str:tipo>/<int:pk>/", curacion.verificar, name="catalogo_verificar"),
+    path("catalogo/preparaciones/", curacion.preparaciones, name="catalogo_preparaciones"),
+    path("catalogo/preparaciones/nueva/", curacion.preparacion_editar, name="catalogo_preparacion_nueva"),
+    path("catalogo/preparaciones/<int:pk>/", curacion.preparacion_editar, name="catalogo_preparacion_editar"),
+    path("catalogo/metodos/", curacion.metodos, name="catalogo_metodos"),
+    path("catalogo/metodos/<int:pk>/", curacion.metodo_editar, name="catalogo_metodo_editar"),
+    path("catalogo/coeficientes/", curacion.metodos, name="catalogo_coeficientes"),
+    path("catalogo/coeficientes/nuevo/", curacion.coeficiente_editar, name="catalogo_coeficiente_nuevo"),
+    path("catalogo/coeficientes/<int:pk>/", curacion.coeficiente_editar, name="catalogo_coeficiente_editar"),
+    path("catalogo/lexico/", curacion.lexico, name="catalogo_lexico"),
+    path("catalogo/lexico/nuevo/", curacion.termino_editar, name="catalogo_termino_nuevo"),
+    path("catalogo/lexico/<int:pk>/", curacion.termino_editar, name="catalogo_termino_editar"),
+    path("catalogo/porciones/", curacion.porciones, name="catalogo_porciones"),
+    path("catalogo/porciones/nueva/", curacion.porcion_editar, name="catalogo_porcion_nueva"),
+    path("catalogo/porciones/<int:pk>/", curacion.porcion_editar, name="catalogo_porcion_editar"),
+    # --- Administrador (RF1, RF11, RF21, RF22) -------------------------------------
+    path("administracion/", administracion.inicio, name="administracion"),
+    path("administracion/cuentas/", administracion.cuentas_lista, name="cuentas_admin"),
+    path("administracion/cuentas/nueva/", administracion.cuenta_interna_nueva, name="cuenta_interna_nueva"),
+    path("administracion/cuentas/<int:pk>/estado/", administracion.cuenta_estado, name="cuenta_estado"),
+    path("administracion/cuentas/<int:pk>/soporte/", administracion.cuenta_soporte, name="cuenta_soporte"),
+    path("administracion/parametros/", administracion.parametros, name="parametros"),
+    path("administracion/parametros/<int:pk>/", administracion.parametro_editar, name="parametro_editar"),
+    path("administracion/ia/", administracion.ia_admin, name="ia_admin"),
+    path("administracion/auditoria/", administracion.auditoria_vista, name="auditoria"),
+    path("administracion/procesos/", administracion.procesos, name="procesos"),
+    # --- API REST v1 ----------------------------------------------------------------
+    path("api/v1/", include("core.api.urls")),
 ]

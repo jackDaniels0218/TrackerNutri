@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Tu meta{% endblock %}
+{% block contenido %}
+<h1>Tu meta</h1>
+{% if elegibilidad and not elegibilidad.elegible %}
+  <div class="aviso aviso-cuidado">No aplicamos déficit calórico porque {{ elegibilidad.motivos|join:", " }}. Tu seguimiento es informativo. Te recomendamos acompañamiento profesional.</div>
+{% endif %}
+{% if alcanzo_meta %}
+  <div class="aviso aviso-exito">¡Alcanzaste tu peso meta! Cuando quieras, pasa a mantenimiento.
+    <form method="post" action="{% url 'meta_mantenimiento' %}" class="formulario-en-linea">{% csrf_token %}<button class="boton boton-principal boton-pequeno">Pasar a mantenimiento</button></form></div>
+{% endif %}
+{% if vigente %}
+<section class="tarjeta">
+  <div class="encabezado">
+    <div><h2 style="margin:0">Meta vigente desde el {{ vigente.fecha_inicio|date:"d/m/Y" }}</h2>
+      <p class="texto-secundario">{{ vigente.get_origen_display }} · {{ vigente.motivo }}</p></div>
+    {% if vigente.puede_revertirse %}
+      <form method="post" action="{% url 'meta_revertir' vigente.pk %}">{% csrf_token %}
+        <button class="boton boton-secundario" type="submit">Revertir este ajuste</button>
+        <p class="texto-secundario pequeno">Puedes hacerlo hasta el {{ vigente.revertible_hasta|date:"d/m H:i" }}.</p></form>
+    {% endif %}
+  </div>
+  <div class="indicadores">
+    <div class="indicador"><div class="etiqueta-ind">Meta diaria</div><div class="valor">{{ vigente.kcal_dia|cifra:ocultar_cifras|entero }} <small>kcal</small></div></div>
+    <div class="indicador"><div class="etiqueta-ind">Gasto estimado</div><div class="valor">{{ vigente.gasto_total|cifra:ocultar_cifras|entero }} <small>kcal</small></div><div class="detalle">TMB {{ vigente.tmb|cifra:ocultar_cifras|entero }} kcal</div></div>
+    <div class="indicador"><div class="etiqueta-ind">Déficit</div><div class="valor">{{ vigente.deficit_pct }} <small>%</small></div></div>
+    <div class="indicador"><div class="etiqueta-ind">Macros</div><div class="detalle" style="font-size:.95rem">P {{ vigente.proteinas_g|entero }} g · C {{ vigente.carbohidratos_g|entero }} g · G {{ vigente.grasas_g|entero }} g</div></div>
+  </div>
+  <h3>Cómo se calculó</h3>
+  <ol>{% for paso in vigente.explicacion.pasos %}<li>{{ paso }}</li>{% endfor %}</ol>
+</section>
+{% endif %}
+<div class="rejilla-2">
+  <section class="tarjeta">
+    <h2>Ajuste semanal automático</h2>
+    <p class="texto-secundario">Cada semana comparamos lo que comiste (días marcados como completos) con la evolución de tu peso tendencial para estimar tu gasto real. El cambio máximo es de 150 kcal por semana, nunca baja de {{ piso|entero }} kcal ni supera el déficit máximo, y puedes revertirlo durante 48 horas.</p>
+    <form method="post" action="{% url 'meta_evaluar' %}">{% csrf_token %}<button class="boton boton-secundario" type="submit">Evaluar mi semana ahora</button></form>
+  </section>
+  <section class="tarjeta">
+    <h2>Proponer otra meta</h2>
+    <form method="post" class="formulario" novalidate>{% csrf_token %}{% include "generico/_form.html" %}
+      <button class="boton boton-secundario" type="submit">Proponer</button></form>
+    <p class="texto-secundario pequeno">Se acepta solo dentro de los límites de seguridad (mínimo {{ piso|entero }} kcal para ti).</p>
+  </section>
+</div>
+<section class="tarjeta">
+  <h2>Historial de metas</h2>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Desde</th><th>Hasta</th><th class="num">Meta</th><th>Origen</th><th>Motivo</th></tr></thead>
+    <tbody>{% for m in historial %}<tr>
+      <td data-titulo="Desde">{{ m.fecha_inicio|date:"d/m/Y" }}</td><td data-titulo="Hasta">{% if m.vigente %}<span class="etiqueta">vigente</span>{% else %}{{ m.fecha_fin|date:"d/m/Y"|default:"—" }}{% endif %}</td>
+      <td class="num" data-titulo="Meta">{{ m.kcal_dia|cifra:ocultar_cifras|entero }} kcal</td><td data-titulo="Origen">{{ m.get_origen_display }}{% if m.revertida %} <span class="etiqueta etiqueta-gris">revertida</span>{% endif %}</td><td data-titulo="Motivo" class="pequeno">{{ m.motivo }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

@@ -59,6 +59,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Cuentas bloqueadas o inactivas pierden la sesión; el registro en tres
+    # pasos obliga a terminar el perfil antes de usar la aplicación.
+    "core.middleware.ControlDeCuentaMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -73,6 +76,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.nutriregional",
             ],
         },
     },
@@ -108,8 +112,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Rutas de autenticación: a dónde va el usuario al entrar y al salir.
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "panel"
+LOGIN_REDIRECT_URL = "inicio"
 LOGOUT_REDIRECT_URL = "login"
+
+# Sesión de corta duración que se renueva con cada petición (actividad 12).
+SESSION_COOKIE_AGE = int(os.environ.get("DJANGO_SESSION_MINUTOS", "60")) * 60
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Enlace de recuperación de contraseña: un solo uso y vigencia de 2 horas.
+PASSWORD_RESET_TIMEOUT = 2 * 60 * 60
+
+# Correo: en desarrollo los mensajes se imprimen en la consola del servidor.
+EMAIL_BACKEND = os.environ.get("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "NutriRegional <no-responder@nutriregional.local>")
+URL_BASE = os.environ.get("NUTRIREGIONAL_URL_BASE", "http://127.0.0.1:8000")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -125,11 +142,11 @@ REST_FRAMEWORK = {
 }
 
 # --- Integración con la API de IA -------------------------------------------
-# Si OPENAI_API_KEY no está definida, el sistema sigue funcionando en modo
-# manual: core/services/ai_service.py lo detecta y devuelve un error controlado.
+# Solo la clave vive aquí (es un secreto). Proveedor, modelo, tiempo de espera,
+# límites y presupuesto son parámetros del sistema (RF11) que el Administrador
+# cambia desde la aplicación. Sin clave, la interpretación usa solo el léxico
+# y las reglas, y queda la búsqueda manual.
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_TIMEOUT = float(os.environ.get("OPENAI_TIMEOUT", "20"))
 
 # --- Seguridad para despliegue ----------------------------------------------
 # Con DEBUG=False se activan las cabeceras y cookies seguras.
@@ -144,10 +161,15 @@ if not DEBUG:
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "formatters": {"simple": {"format": "{asctime} {levelname} {name}: {message}", "style": "{"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        # Registro técnico (RNF36): advertencias y errores, sin datos del usuario.
+        "archivo": {"class": "logging.handlers.RotatingFileHandler", "filename": BASE_DIR / "nutriregional.log",
+                    "maxBytes": 1_000_000, "backupCount": 3, "formatter": "simple", "encoding": "utf-8"},
+    },
     "loggers": {
-        # Registra errores técnicos del servicio de IA sin volcar datos del
-        # usuario en los logs.
-        "core.services.ai_service": {"handlers": ["console"], "level": "WARNING"},
+        "django.request": {"handlers": ["archivo"], "level": "WARNING", "propagate": True},
+        "core": {"handlers": ["console", "archivo"], "level": "WARNING"},
     },
 }

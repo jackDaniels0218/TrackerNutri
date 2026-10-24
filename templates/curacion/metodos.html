@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Métodos de cocción{% endblock %}
+{% block contenido %}
+<h1>Métodos de cocción y absorción de aceite</h1>
+<p class="texto-secundario">Coeficientes y factores que usa el motor de cálculo. No se eliminan: se inactivan. Cada cambio queda en el historial con su versión.</p>
+<section class="tarjeta" id="metodos">
+  <h2>Métodos</h2>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Método</th><th>Grasa</th><th>Fritura</th><th class="num">Cambio de peso</th><th class="num">Grasa perdida</th><th>Palabras que lo identifican</th><th></th></tr></thead>
+    <tbody>{% for m in metodos %}<tr {% if m.estado == "inactivo" %}class="descartado"{% endif %}><td data-titulo="Método"><strong>{{ m.nombre }}</strong><div class="texto-secundario pequeno">{{ m.clave }}</div></td>
+      <td data-titulo="Usa grasa">{{ m.usa_grasa|yesno:"sí,no" }}</td><td data-titulo="Fritura">{{ m.es_fritura|yesno:"sí,no" }}</td>
+      <td class="num" data-titulo="Agua">{{ m.factor_agua }} %</td><td class="num" data-titulo="Grasa perdida">{{ m.perdida_grasa }} %</td>
+      <td data-titulo="Palabras" class="pequeno">{{ m.palabras }}</td><td>{% if rol == ROL_CURADOR %}<a href="{% url 'catalogo_metodo_editar' m.pk %}">Editar</a>{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+<section class="tarjeta" id="coeficientes">
+  <div class="encabezado"><h2 style="margin:0">Coeficientes de absorción de aceite</h2>{% if rol == ROL_CURADOR %}<a class="boton boton-secundario boton-pequeno" href="{% url 'catalogo_coeficiente_nuevo' %}">＋ Nuevo</a>{% endif %}</div>
+  <p class="texto-secundario pequeno">Porcentaje de aceite absorbido sobre el peso crudo según el tipo de alimento (matriz) y la fritura.</p>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Método</th><th>Matriz</th><th class="num">Mínimo</th><th class="num">Típico</th><th class="num">Máximo</th><th>Fuente</th><th></th></tr></thead>
+    <tbody>{% for c in coeficientes %}<tr><td data-titulo="Método">{{ c.metodo }}</td><td data-titulo="Matriz">{{ c.get_matriz_display }}</td>
+      <td class="num" data-titulo="Mínimo">{{ c.pct_min }} %</td><td class="num" data-titulo="Típico"><strong>{{ c.pct_tipico }} %</strong></td><td class="num" data-titulo="Máximo">{{ c.pct_max }} %</td>
+      <td data-titulo="Fuente" class="pequeno">{{ c.fuente|truncatechars:80 }}</td><td>{% if rol == ROL_CURADOR %}<a href="{% url 'catalogo_coeficiente_editar' c.pk %}">Editar</a>{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

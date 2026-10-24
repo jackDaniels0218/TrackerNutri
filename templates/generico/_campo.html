@@ -1,0 +1,14 @@
+{% if campo.is_hidden %}{{ campo }}{% elif campo.widget_type == 'checkbox' %}
+<div class="campo-casilla">
+  {{ campo }}
+  <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.help_text %}<br><span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}</label>
+</div>
+{% for error in campo.errors %}<p class="error">{{ error }}</p>{% endfor %}
+{% else %}
+<div class="campo-grupo">
+  <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+  {{ campo }}
+  {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+  {% for error in campo.errors %}<p class="error">{{ error }}</p>{% endfor %}
+</div>
+{% endif %}

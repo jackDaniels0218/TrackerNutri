@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titulo %}Mis alimentos{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>Mis alimentos</h1><p class="texto-secundario">Productos que no están en el catálogo, por ejemplo uno de tu tienda. Solo tú los ves; el equipo de curación puede incorporarlos al catálogo general tras revisarlos, sin saber quién los creó.</p></div>
+  <a class="boton boton-principal" href="{% url 'mi_alimento_nuevo' %}">＋ Nuevo</a></div>
+<section class="tarjeta">
+  {% if alimentos %}<div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Nombre</th><th>Categoría</th><th class="num">kcal/100 g</th><th>Revisión</th><th></th></tr></thead>
+    <tbody>{% for a in alimentos %}<tr><td data-titulo="Nombre">{{ a.nombre }}</td><td data-titulo="Categoría">{{ a.categoria }}</td><td class="num" data-titulo="kcal">{{ a.kcal }}</td>
+      <td data-titulo="Revisión">{% if a.verificado %}revisado{% else %}<span class="etiqueta etiqueta-alerta">pendiente</span>{% endif %}</td><td><a href="{% url 'mi_alimento_editar' a.pk %}">Editar</a></td></tr>{% endfor %}</tbody>
+  </table></div>{% else %}<div class="vacio">Aún no has creado alimentos personales.</div>{% endif %}
+</section>
+{% endblock %}

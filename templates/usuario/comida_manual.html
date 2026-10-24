@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Búsqueda manual{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <h1>Registrar buscando en el catálogo</h1>
+  <p class="texto-secundario">Siempre disponible, también sin IA. Elige el alimento o la preparación de la lista y escribe la cantidad. Los cálculos son los mismos que con el texto libre.</p>
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {{ cabecera.clave }}
+    <div class="campos-fila">
+      {% with campo=cabecera.fecha %}{% include "generico/_campo.html" %}{% endwith %}
+      {% with campo=cabecera.hora %}{% include "generico/_campo.html" %}{% endwith %}
+      {% with campo=cabecera.tipo %}{% include "generico/_campo.html" %}{% endwith %}
+    </div>
+    {{ filas.management_form }}
+    {% if filas.non_form_errors %}<p class="aviso aviso-error">{{ filas.non_form_errors|join:" " }}</p>{% endif %}
+    <div id="filas" data-prefijo="fila">
+      {% for fila in filas %}
+        <fieldset class="tarjeta fila-formset" style="padding:12px;margin:10px 0">
+          <legend class="etiqueta-campo">Alimento</legend>
+          <div class="campos-fila">
+            {% for campo in fila %}{% if campo.name != "DELETE" %}{% include "generico/_campo.html" %}{% endif %}{% endfor %}
+          </div>
+          {% if fila.DELETE %}<label class="pequeno">{{ fila.DELETE }} Quitar esta fila</label>{% endif %}
+        </fieldset>
+      {% endfor %}
+    </div>
+    <div class="acciones">
+      <button type="button" class="boton boton-secundario" id="agregar-fila">＋ Otro alimento</button>
+      <button type="submit" class="boton boton-principal">Guardar comida</button>
+    </div>
+  </form>
+  <p class="texto-secundario pequeno">¿No encuentras un producto? <a href="{% url 'mi_alimento_nuevo' %}">Créalo como alimento personal</a> con los datos de su etiqueta.</p>
+</section>
+<datalist id="catalogo">{% for nombre in catalogo %}<option value="{{ nombre }}">{% endfor %}</datalist>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/formulario.js' %}"></script>{% endblock %}

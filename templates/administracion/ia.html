@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}IA y costos{% endblock %}
+{% block contenido %}
+<h1>Proveedor de IA y costos</h1>
+<p class="texto-secundario">La IA solo convierte texto en una estructura; nunca calcula calorías. Se usa únicamente cuando el léxico, la similitud y la coincidencia por palabras no resuelven un componente. Solo se envía el texto de la comida.</p>
+<section class="indicadores">
+  <div class="indicador"><div class="etiqueta-ind">Proveedor activo</div><div class="valor" style="font-size:1.2rem">{{ ia.proveedor }}</div><div class="detalle">{{ ia.modelo }} · {{ ia.disponible|yesno:"disponible,no disponible (sin clave o desactivado)" }}</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Plantilla vigente</div><div class="valor" style="font-size:1.2rem">{{ ia.plantilla }}</div></div>
+  <div class="indicador {% if ia.costo_mes >= ia.presupuesto %}indicador-alerta{% endif %}"><div class="etiqueta-ind">Gasto del mes</div><div class="valor">{{ ia.costo_mes|floatformat:4 }} <small>USD</small></div><div class="detalle">presupuesto {{ ia.presupuesto }} USD</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Latencia p95 (30 días)</div><div class="valor">{{ ia.latencia_p95_ms|default:"—" }} <small>ms</small></div><div class="detalle">meta del SRS: ≤ 4000 ms</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Tokens (30 días)</div><div class="valor" style="font-size:1.1rem">{{ ia.tokens.e|default:0 }} / {{ ia.tokens.s|default:0 }}</div><div class="detalle">entrada / salida</div></div>
+</section>
+<section class="tarjeta"><h2>Llamadas de los últimos 30 días ({{ ia.llamadas }})</h2>
+  <div class="tabla-responsiva"><table class="tabla"><thead><tr><th>Resultado</th><th class="num">Cantidad</th></tr></thead>
+  <tbody>{% for clave, n in ia.por_resultado.items %}<tr><td>{{ clave }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</tbody></table></div>
+  <p class="texto-secundario pequeno">«cache»: la frase ya se había interpretado y no se pagó de nuevo. «limite_diario» y «presupuesto»: se usaron solo reglas. No se guarda el texto enviado ni la respuesta.</p>
+  <a class="boton boton-secundario" href="{% url 'parametros' %}">Cambiar proveedor, modelo, límites o presupuesto</a></section>
+<section class="tarjeta"><h2>Plantillas de instrucciones versionadas</h2>
+  {% for version, texto in ia.plantillas.items %}<details class="desglose" {% if version == ia.plantilla %}open{% endif %}><summary>Plantilla {{ version }}{% if version == ia.plantilla %} (vigente){% endif %}</summary><pre style="white-space:pre-wrap;font-size:.82rem">{{ texto }}</pre></details>{% endfor %}</section>
+{% endblock %}

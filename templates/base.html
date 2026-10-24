@@ -1,51 +1,120 @@
 {% load static %}<!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block titulo %}Tracker Nutricional{% endblock %}</title>
+  <title>{% block titulo %}NutriRegional{% endblock %} · NutriRegional</title>
   <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
 </head>
 <body>
+  <a class="salto" href="#contenido">Saltar al contenido</a>
   <header class="cabecera">
     <div class="contenedor cabecera-interior">
-      <a class="marca" href="{% url 'panel' %}">🥑 Tracker Nutricional</a>
+      <a class="marca" href="{% url 'inicio' %}">🥑 NutriRegional
+        {% if rol == ROL_CURADOR %}<small>Curador</small>{% elif rol == ROL_ADMIN %}<small>Administrador</small>{% endif %}
+      </a>
       {% if user.is_authenticated %}
-        <nav class="navegacion">
-          <a href="{% url 'panel' %}">Panel</a>
-          <a href="{% url 'nueva_comida' %}">Registrar</a>
-          <a href="{% url 'historial' %}">Historial</a>
-          <a href="{% url 'perfil' %}">Perfil</a>
-          <form action="{% url 'logout' %}" method="post" class="formulario-en-linea">
-            {% csrf_token %}
-            <button type="submit" class="boton-enlace">Salir</button>
-          </form>
+        {% with ruta=request.resolver_match.url_name %}
+        <nav class="navegacion" aria-label="Menú principal">
+          {% if rol == ROL_USUARIO %}
+            <a href="{% url 'panel' %}" {% if ruta == 'panel' %}class="activo"{% endif %}>Hoy</a>
+            <a href="{% url 'comida_nueva' %}" {% if ruta == 'comida_nueva' or ruta == 'comida_manual' %}class="activo"{% endif %}>Registrar</a>
+            <a href="{% url 'historial' %}" {% if ruta == 'historial' %}class="activo"{% endif %}>Historial</a>
+            <a href="{% url 'peso' %}" {% if ruta == 'peso' %}class="activo"{% endif %}>Peso</a>
+            <a href="{% url 'metas' %}" {% if ruta == 'metas' %}class="activo"{% endif %}>Meta</a>
+            <a href="{% url 'reportes' %}" {% if ruta == 'reportes' %}class="activo"{% endif %}>Reportes</a>
+            <details>
+              <summary>Más</summary>
+              <div class="submenu">
+                <a href="{% url 'favoritas' %}">Comidas favoritas</a>
+                <a href="{% url 'calculadora_aceite' %}">Calculadora de aceite</a>
+                <a href="{% url 'mis_alimentos' %}">Mis alimentos</a>
+                <a href="{% url 'mis_correcciones' %}">Mis correcciones</a>
+                <a href="{% url 'perfil' %}">Perfil nutricional</a>
+                <a href="{% url 'recordatorios' %}">Recordatorios</a>
+                <a href="{% url 'privacidad' %}">Privacidad y cuidado</a>
+                <a href="{% url 'cuenta' %}">Mi cuenta</a>
+              </div>
+            </details>
+          {% elif rol == ROL_CURADOR %}
+            <a href="{% url 'curacion' %}" {% if ruta == 'curacion' %}class="activo"{% endif %}>Bandeja</a>
+            <a href="{% url 'catalogo_alimentos' %}" {% if ruta == 'catalogo_alimentos' %}class="activo"{% endif %}>Alimentos</a>
+            <a href="{% url 'catalogo_preparaciones' %}" {% if ruta == 'catalogo_preparaciones' %}class="activo"{% endif %}>Preparaciones</a>
+            <a href="{% url 'catalogo_metodos' %}" {% if ruta == 'catalogo_metodos' %}class="activo"{% endif %}>Cocción</a>
+            <a href="{% url 'catalogo_lexico' %}" {% if ruta == 'catalogo_lexico' %}class="activo"{% endif %}>Léxico</a>
+            <a href="{% url 'versiones' %}" {% if ruta == 'versiones' %}class="activo"{% endif %}>Versiones</a>
+            <a href="{% url 'exactitud' %}" {% if ruta == 'exactitud' %}class="activo"{% endif %}>Exactitud</a>
+            <details>
+              <summary>Más</summary>
+              <div class="submenu">
+                <a href="{% url 'catalogo_porciones' %}">Porciones caseras</a>
+                <a href="{% url 'parametros' %}">Parámetros nutricionales</a>
+                <a href="{% url 'indicadores' %}">Indicadores agregados</a>
+                <a href="{% url 'auditoria' %}?ver=catalogo">Historial del catálogo</a>
+                <a href="{% url 'cuenta' %}">Mi cuenta</a>
+              </div>
+            </details>
+          {% elif rol == ROL_ADMIN %}
+            <a href="{% url 'administracion' %}" {% if ruta == 'administracion' %}class="activo"{% endif %}>Inicio</a>
+            <a href="{% url 'cuentas_admin' %}" {% if ruta == 'cuentas_admin' %}class="activo"{% endif %}>Cuentas</a>
+            <a href="{% url 'parametros' %}" {% if ruta == 'parametros' %}class="activo"{% endif %}>Parámetros</a>
+            <a href="{% url 'ia_admin' %}" {% if ruta == 'ia_admin' %}class="activo"{% endif %}>IA y costos</a>
+            <a href="{% url 'auditoria' %}" {% if ruta == 'auditoria' %}class="activo"{% endif %}>Auditoría</a>
+            <a href="{% url 'procesos' %}" {% if ruta == 'procesos' %}class="activo"{% endif %}>Procesos</a>
+            <details>
+              <summary>Más</summary>
+              <div class="submenu">
+                <a href="{% url 'indicadores' %}">Indicadores agregados</a>
+                <a href="{% url 'catalogo_alimentos' %}">Catálogo (consulta)</a>
+                <a href="{% url 'exactitud' %}">Exactitud del catálogo</a>
+                <a href="{% url 'cuenta' %}">Mi cuenta</a>
+              </div>
+            </details>
+          {% endif %}
+          <a href="{% url 'notificaciones' %}" aria-label="Notificaciones" {% if ruta == 'notificaciones' %}class="activo"{% endif %}>🔔{% if notificaciones_sin_leer %} <span class="insignia">{{ notificaciones_sin_leer }}</span>{% endif %}</a>
+          <details>
+            <summary aria-label="Sesión">👤</summary>
+            <div class="submenu">
+              <span class="texto-secundario pequeno" style="display:block;padding:6px 10px">{{ user.email }}</span>
+              <form action="{% url 'logout' %}" method="post" class="formulario-en-linea">{% csrf_token %}
+                <button type="submit">Salir</button>
+              </form>
+              <form action="{% url 'cerrar_sesiones' %}" method="post" class="formulario-en-linea">{% csrf_token %}
+                <button type="submit">Cerrar sesión en todos los dispositivos</button>
+              </form>
+            </div>
+          </details>
+        </nav>
+        {% endwith %}
+      {% else %}
+        <nav class="navegacion" aria-label="Acceso">
+          <a href="{% url 'requerimientos' %}">Requerimientos</a>
+          <a href="{% url 'login' %}">Ingresar</a>
+          <a href="{% url 'registro' %}" class="boton boton-principal boton-pequeno">Crear cuenta</a>
         </nav>
       {% endif %}
     </div>
   </header>
 
-  <main class="contenedor">
+  <main id="contenido" class="contenedor">
     {% if messages %}
-      <ul class="mensajes">
-        {% for mensaje in messages %}
-          <li class="mensaje mensaje-{{ mensaje.tags }}">{{ mensaje }}</li>
-        {% endfor %}
+      <ul class="mensajes" role="status">
+        {% for mensaje in messages %}<li class="mensaje mensaje-{{ mensaje.tags }}">{{ mensaje }}</li>{% endfor %}
       </ul>
     {% endif %}
-
+    {% if seguimiento_pausado and rol == ROL_USUARIO %}
+      <p class="aviso aviso-informativo">Tu seguimiento está en pausa: no hay ajustes de meta ni recordatorios. <a href="{% url 'privacidad' %}">Reanudar</a></p>
+    {% endif %}
     {% block contenido %}{% endblock %}
   </main>
 
   <footer class="pie">
     <div class="contenedor">
-      <p>
-        Proyecto académico. Los valores nutricionales son estimaciones de
-        referencia y no constituyen una recomendación médica.
-      </p>
+      <p><strong>Las cifras son estimaciones.</strong> NutriRegional no es un servicio médico y no reemplaza a un profesional de la salud o de la nutrición.
+        <a href="{% url 'aviso_medico' %}">Aviso</a> · <a href="{% url 'politica_datos' %}">Política de datos</a> · <a href="{% url 'requerimientos' %}">Requerimientos del SRS</a></p>
+      <p>Prototipo académico · Universidad de Cundinamarca, Facatativá.</p>
     </div>
   </footer>
-
   {% block scripts %}{% endblock %}
 </body>
 </html>

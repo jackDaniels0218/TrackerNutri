@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Historial{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <h1>Historial de comidas</h1>
+  <form method="get" class="campos-fila" style="align-items:end;min-width:min(100%,460px)">
+    <label class="etiqueta-campo">Desde<input class="campo" type="date" name="desde" value="{{ desde|date:'Y-m-d' }}"></label>
+    <label class="etiqueta-campo">Hasta<input class="campo" type="date" name="hasta" value="{{ hasta|date:'Y-m-d' }}"></label>
+    <button class="boton boton-secundario" type="submit">Filtrar</button>
+  </form>
+</div>
+{% for fecha, comidas_dia in pagina %}
+  {% with t=totales|obtener:fecha %}
+  <section class="tarjeta">
+    <div class="encabezado" style="margin-bottom:6px">
+      <h2 style="margin:0"><a href="{% url 'panel' %}?fecha={{ fecha|date:'Y-m-d' }}">{{ fecha|date:"l j \d\e F" }}</a> {% if t.dia_completo %}<span class="etiqueta">día completo</span>{% endif %}</h2>
+      <div style="text-align:right"><strong>{{ t.kcal|cifra:ocultar_cifras|entero }} kcal</strong>{% if t.meta_kcal and not ocultar_cifras %}<span class="texto-secundario pequeno"> de {{ t.meta_kcal|entero }}</span>{% endif %}
+        <div class="texto-secundario pequeno">P {{ t.proteinas|entero }} g · C {{ t.carbohidratos|entero }} g · G {{ t.grasas|entero }} g</div></div>
+    </div>
+    <ul class="lista-limpia lista-filas">
+      {% for comida in comidas_dia %}
+        <li>
+          <div><a href="{% url 'comida_detalle' comida.pk %}"><strong>{{ comida.get_tipo_display }}</strong></a>
+            <span class="texto-secundario pequeno">{{ comida.fecha_hora|time:"H:i" }} · {{ comida.get_origen_display }}{% if comida.estado == "editada" %} · editada{% endif %}{% if comida.es_favorita %} · ★{% endif %}</span>
+            <div class="texto-secundario pequeno">{% for i in comida.items.all %}{% if not i.descartado %}{{ i.nombre_mostrado }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}</div></div>
+          <div><strong>{{ comida.kcal|cifra:ocultar_cifras|entero }}</strong> kcal <span class="etiqueta confianza-{{ comida.confianza|confianza }}">{{ comida.confianza|confianza }}</span></div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endwith %}
+{% empty %}
+  <section class="tarjeta vacio"><p>No hay comidas registradas en estas fechas.</p><a class="boton boton-principal" href="{% url 'comida_nueva' %}">Registrar una comida</a></section>
+{% endfor %}
+{% if pagina.has_other_pages %}
+<nav class="paginacion" aria-label="Páginas">
+  {% if pagina.has_previous %}<a class="boton boton-secundario boton-pequeno" href="?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}&pagina={{ pagina.previous_page_number }}">← Más recientes</a>{% endif %}
+  <span class="texto-secundario">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+  {% if pagina.has_next %}<a class="boton boton-secundario boton-pequeno" href="?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}&pagina={{ pagina.next_page_number }}">Más antiguas →</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

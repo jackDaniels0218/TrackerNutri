@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Registrar comida{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <h1>¿Qué comiste?</h1>
+  <p class="texto-secundario">Escríbelo como se lo contarías a alguien. Después verás cada componente con su cantidad y podrás corregirlo antes de guardar.</p>
+  <form method="post" class="formulario" id="formulario-analisis" novalidate>
+    {% csrf_token %}
+    {% with campo=form.texto %}{% include "generico/_campo.html" %}{% endwith %}
+    <p class="ayuda" id="contador" aria-live="polite"></p>
+    <div class="campos-fila">
+      {% with campo=form.fecha %}{% include "generico/_campo.html" %}{% endwith %}
+      {% with campo=form.hora %}{% include "generico/_campo.html" %}{% endwith %}
+      {% with campo=form.tipo %}{% include "generico/_campo.html" %}{% endwith %}
+    </div>
+    <div class="acciones">
+      <button type="submit" class="boton boton-principal" id="boton-analizar">Interpretar</button>
+      <a class="boton boton-secundario" href="{% url 'comida_manual' %}">Buscar en el catálogo</a>
+      <a class="boton boton-secundario" href="{% url 'favoritas' %}">Repetir una favorita</a>
+    </div>
+  </form>
+  <p class="texto-secundario pequeno" style="margin-top:12px">
+    {% if ia_disponible and acepta_ia %}Primero se usa el léxico regional; la IA externa solo interviene para lo que el léxico no reconozca.
+    {% elif ia_disponible %}No autorizaste la IA externa: se usa solo el léxico regional y las reglas. Puedes cambiarlo en <a href="{% url 'privacidad' %}">Privacidad</a>.
+    {% else %}La interpretación usa el léxico regional y las reglas del sistema.{% endif %}
+    La IA nunca calcula calorías.
+  </p>
+</section>
+<section class="tarjeta">
+  <h2>Ejemplos</h2>
+  <ul class="texto-secundario">
+    <li>Hoy almorcé una arepa frita mediana, 150 gramos de carne de res asada, una porción de arroz y una Coca-Cola de 400 ml.</li>
+    <li>Desayuné dos huevos pericos, una arepa y un tinto con dos cucharadas de azúcar.</li>
+    <li>Tres patacones con hogao y una limonada.</li>
+    <li>Un plato de ajiaco con aguacate.</li>
+  </ul>
+  {% if recientes %}
+    <h3>Tus frases recientes</h3>
+    <ul class="texto-secundario">{% for c in recientes %}<li>{{ c.texto_original }}</li>{% endfor %}</ul>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/formulario.js' %}"></script>{% endblock %}

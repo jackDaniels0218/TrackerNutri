@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Notificaciones{% endblock %}
+{% block contenido %}
+<div class="encabezado"><h1>Notificaciones</h1>
+  {% if notificaciones %}<form method="post">{% csrf_token %}<button class="boton boton-secundario boton-pequeno" type="submit">Marcar todas como leídas</button></form>{% endif %}</div>
+<section class="tarjeta">
+  <ul class="lista-limpia lista-filas">
+  {% for n in notificaciones %}
+    <li style="{% if not n.leida %}font-weight:600{% endif %}">
+      <div><span class="etiqueta {% if n.tipo == 'cuidado' %}etiqueta-azul{% elif n.leida %}etiqueta-gris{% endif %}">{{ n.get_tipo_display }}</span> {{ n.titulo }}
+        <div class="texto-secundario pequeno" style="font-weight:400">{{ n.mensaje }}</div>
+        <div class="texto-secundario pequeno" style="font-weight:400">{{ n.creada_en|date:"d/m/Y H:i" }}{% if n.enviada_por_correo %} · también por correo{% endif %}</div></div>
+      {% if not n.leida %}<form method="post" action="{% url 'notificacion_leer' n.pk %}">{% csrf_token %}<button class="boton boton-secundario boton-pequeno" type="submit">{% if n.url %}Ver{% else %}Marcar leída{% endif %}</button></form>{% elif n.url %}<a href="{{ n.url }}" class="pequeno">Ver</a>{% endif %}
+    </li>
+  {% empty %}<li class="vacio">No tienes notificaciones.</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}
