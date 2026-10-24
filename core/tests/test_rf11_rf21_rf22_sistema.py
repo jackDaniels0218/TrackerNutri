@@ -1,5 +1,6 @@
 """RF11 (Parámetros), RF21 (Integración con IA) y RF22 (Trazabilidad y auditoría)."""
 
+import io
 import json
 import uuid
 from decimal import Decimal
@@ -158,6 +159,32 @@ class AuditoriaTests(BaseNutri):
         r = self.entrar(admin).get(reverse("auditoria"), {"accion": "cuenta_creada"})
         self.assertContains(r, "cuenta_creada")
         self.assertEqual(self.entrar(self.crear_usuario("otro@prueba.co")).get(reverse("auditoria")).status_code, 403)
+
+
+class NoFuncionalesTests(BaseNutri):
+    def test_rnf23_interpretacion_con_reglas_en_menos_de_1_5_s(self):
+        from time import perf_counter
+
+        from core.services.interpretacion import interpretar
+
+        inicio = perf_counter()
+        interpretar("Hoy almorcé una bandeja paisa, un jugo de lulo y de postre un bocadillo con queso", permitir_ia=False)
+        self.assertLess(perf_counter() - inicio, 1.5)
+
+    def test_rnf34_respaldo_de_la_base(self):
+        import tempfile
+        from pathlib import Path
+
+        from django.core.management import call_command
+        from django.db import connection
+
+        if connection.vendor != "sqlite":
+            self.skipTest("Solo SQLite")
+        with tempfile.TemporaryDirectory() as carpeta:
+            with override_settings(DATABASES={"default": {**connection.settings_dict, "NAME": str(Path(carpeta, "base.sqlite3"))}}):
+                call_command("respaldar", destino=carpeta, conservar=1, stdout=io.StringIO())
+                call_command("respaldar", destino=carpeta, conservar=1, stdout=io.StringIO())
+            self.assertEqual(len(list(Path(carpeta).glob("nutriregional-*.sqlite3"))), 1)
 
 
 class ApiTests(BaseNutri):

@@ -23,3 +23,9 @@ staticfiles/
 .idea/
 .DS_Store
 *.swp
+
+# Respaldos de la base de datos (manage.py respaldar)
+respaldos/
+
+# Registro técnico
+nutriregional.log*

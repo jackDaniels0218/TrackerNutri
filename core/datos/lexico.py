@@ -48,6 +48,8 @@ SINONIMOS_ALIMENTOS = {
     "quesito": "Queso campesino",
     "queso blanco": "Queso campesino",
     "yogur": "Yogur con fruta",
+    "yogur natural": "Yogur natural entero",
+    "yogurt natural": "Yogur natural entero",
     "yogurt": "Yogur con fruta",
     "kumis": "Kumis",
     "mantequilla": "Mantequilla",
@@ -92,6 +94,7 @@ SINONIMOS_ALIMENTOS = {
     "atun en lata": "Atún en lata en agua",
     "sardinas": "Sardinas en salsa de tomate",
     "camarones": "Camarón",
+    "pollo frito": "Pollo entero con piel",
     # Huevos
     "huevo": "Huevo de gallina",
     "huevitos": "Huevo de gallina",

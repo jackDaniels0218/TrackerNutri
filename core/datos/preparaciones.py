@@ -112,7 +112,7 @@ PREPARACIONES = [
     P("Tajadas de maduro", "fritura", 100, "fritura_profunda",
       [C("Plátano maduro", 125)],
       porciones={"porcion": 100, "tajada": 25},
-      terminos=["tajadas", "tajadas de maduro", "tajada de maduro", "maduritos"]),
+      terminos=["tajadas de platano maduro", "tajadas", "tajadas de maduro", "tajada de maduro", "maduritos"]),
     P("Papa criolla frita", "fritura", 150, "fritura_profunda",
       [C("Papa criolla", 190), C("Sal", 1)],
       porciones={"porcion": 150},

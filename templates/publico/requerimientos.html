@@ -21,11 +21,11 @@
   <p class="enlaces">{% for nombre_url, etiqueta in rf.pantallas %}<a class="boton boton-secundario boton-pequeno" href="{% url nombre_url %}">{{ etiqueta }} →</a>{% endfor %}</p>
 </article>
 {% endfor %}
-<h2>Requerimientos no funcionales visibles en el prototipo</h2>
+<h2>Requerimientos no funcionales (actividades 23 a 36)</h2>
 <div class="tarjeta">
   <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
-    <thead><tr><th>RNF</th><th>Nombre</th><th>Cómo se cumple</th><th></th></tr></thead>
-    <tbody>{% for r in no_funcionales %}<tr><td data-titulo="RNF">{{ r.id }}</td><td data-titulo="Nombre">{{ r.nombre }}</td><td data-titulo="Cómo">{{ r.como }}</td><td><a href="{% url r.pantalla %}">Ver</a></td></tr>{% endfor %}</tbody>
+    <thead><tr><th>RNF</th><th>Nombre</th><th>Cómo se cumple</th><th>Estado</th><th></th></tr></thead>
+    <tbody>{% for r in no_funcionales %}<tr><td data-titulo="RNF">{{ r.id }}</td><td data-titulo="Nombre">{{ r.nombre }}</td><td data-titulo="Cómo">{{ r.como }}</td><td data-titulo="Estado">{{ r.estado }}</td><td><a href="{% url r.pantalla %}">Ver</a></td></tr>{% endfor %}</tbody>
   </table></div>
   <p class="texto-secundario pequeno">Las diferencias del prototipo frente al SRS (web en lugar de app nativa, SQLite en lugar de PostgreSQL, etc.) están en <code>docs/desviaciones.md</code>.</p>
 </div>

@@ -6,8 +6,11 @@ El Administrador solo ve datos agregados. Para ver los datos de una persona
 necesita su autorización vigente, y el acceso queda en la bitácora.
 """
 
+import io
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -175,6 +178,10 @@ def procesos(request):
         elif proceso == "exactitud":
             e = curacion.ejecutar_exactitud(usuario=request.user)
             resultado = f"Exactitud: identificación {e.identificacion_pct} %, método {e.coccion_pct} %."
+        elif proceso == "respaldo":
+            salida = io.StringIO()
+            call_command("respaldar", stdout=salida)
+            resultado = salida.getvalue().strip()
         if resultado:
             auditoria.registrar(f"proceso_{proceso}", request=request, detalle=resultado)
             messages.success(request, resultado)

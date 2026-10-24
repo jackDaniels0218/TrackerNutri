@@ -311,17 +311,18 @@ def extraer_metodo(texto: str, item: ItemInterpretado, lexico: Lexico) -> str:
     return " ".join(resto.split())
 
 
-def limpiar(texto: str) -> str:
+def limpiar(texto: str, final: bool = True) -> str:
     """
     Quita palabras vacías y números de los EXTREMOS de la frase.
 
     Solo los extremos: "carne de res" debe conservar su "de", mientras que
-    "hoy almorcé una arepa" pierde "hoy almorcé una".
+    "hoy almorcé una arepa" pierde "hoy almorcé una". Con `final=False` se
+    conserva el final, para reconocer términos como "yogur natural".
     """
     palabras = [p for p in texto.split() if not RE_NUMERO.fullmatch(p)]
     while palabras and palabras[0] in VACIAS:
         palabras.pop(0)
-    while palabras and palabras[-1] in VACIAS:
+    while final and palabras and palabras[-1] in VACIAS:
         palabras.pop()
     return " ".join(palabras)
 
@@ -553,8 +554,9 @@ def interpretar(texto: str, *, usuario=None, permitir_ia: bool = True, registrar
         con_metodo = limpiar(sin_cantidades)
         # El segmento completo va primero: en "tajadas de maduro" la palabra
         # "tajadas" es parte del nombre, no una medida.
-        coincidio = resolver([limpiar(segmento), con_metodo, item.texto_alimento], lexico, item)
-        if coincidio == limpiar(segmento) and coincidio != con_metodo:
+        completos = (limpiar(segmento, final=False), limpiar(segmento))
+        coincidio = resolver([*completos, con_metodo, item.texto_alimento], lexico, item)
+        if coincidio in completos and coincidio != con_metodo:
             # Se reconoció el nombre completo: la medida no aplica.
             item.medida = ""
             item.tamano = ""

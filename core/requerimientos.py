@@ -178,14 +178,38 @@ REQUERIMIENTOS = [
     },
 ]
 
-# Requerimientos no funcionales que se pueden mostrar en el prototipo.
+# Requerimientos no funcionales (actividades 23 a 36). `estado` dice con
+# franqueza hasta dónde llega el prototipo; las diferencias se explican en
+# docs/desviaciones.md.
+CUMPLIDO, PARCIAL, DESVIACION = "Cumplido", "Parcial en el prototipo", "Desviación justificada"
+
 NO_FUNCIONALES = [
-    {"id": 24, "nombre": "Exactitud nutricional", "como": "Conjunto de prueba ejecutado antes de publicar el catálogo.", "pantalla": "exactitud"},
-    {"id": 25, "nombre": "Transparencia y explicabilidad", "como": "Desglose, fuente, rango y confianza en cada ítem; versiones del motor y del catálogo.", "pantalla": "historial"},
-    {"id": 26, "nombre": "Seguridad y control de acceso", "como": "Rol validado en el servidor, contraseñas PBKDF2, bloqueo, CSRF, ORM.", "pantalla": "login"},
-    {"id": 27, "nombre": "Protección de datos (Ley 1581)", "como": "Autorizaciones separadas y revocables, exportar y suprimir datos, soporte autorizado.", "pantalla": "privacidad"},
-    {"id": 28, "nombre": "Integridad y trazabilidad", "como": "Claves foráneas, una meta vigente, baja lógica, operaciones atómicas, instantánea de valores.", "pantalla": "auditoria"},
-    {"id": 32, "nombre": "Disponibilidad y confiabilidad", "como": "Degradación controlada de la IA; un doble envío no duplica comidas.", "pantalla": "comida_manual"},
-    {"id": 33, "nombre": "Uso responsable y costos de la IA", "como": "Caché, límite diario, presupuesto mensual con alerta al 80 %.", "pantalla": "ia_admin"},
-    {"id": 35, "nombre": "Mantenibilidad y calidad", "como": "Arquitectura en capas y pruebas automatizadas por requerimiento.", "pantalla": "requerimientos"},
+    {"id": 23, "nombre": "Rendimiento", "estado": PARCIAL, "pantalla": "comida_nueva",
+     "como": "Interpretación con reglas y caché en menos de 1,5 s (prueba automatizada); la IA externa tiene tiempo máximo configurable. No se hicieron pruebas de carga con 200 usuarios."},
+    {"id": 24, "nombre": "Exactitud nutricional", "estado": CUMPLIDO, "pantalla": "exactitud",
+     "como": "Conjunto de frases de referencia ejecutado antes de publicar cada versión del catálogo; bloquea la publicación si baja la exactitud."},
+    {"id": 25, "nombre": "Transparencia y explicabilidad", "estado": CUMPLIDO, "pantalla": "historial",
+     "como": "Desglose, fuente, rango y confianza en cada ítem; explicación paso a paso de la meta; versiones del motor y del catálogo en cada comida."},
+    {"id": 26, "nombre": "Seguridad y control de acceso", "estado": CUMPLIDO, "pantalla": "login",
+     "como": "Rol validado en el servidor en cada petición, contraseñas PBKDF2, bloqueo tras 5 intentos, CSRF, ORM sin SQL manual, la IA nunca aporta valores."},
+    {"id": 27, "nombre": "Protección de datos (Ley 1581)", "estado": CUMPLIDO, "pantalla": "privacidad",
+     "como": "Autorizaciones separadas, revocables e históricas; exportar y suprimir datos; acceso de soporte solo con autorización del titular."},
+    {"id": 28, "nombre": "Integridad y trazabilidad", "estado": CUMPLIDO, "pantalla": "auditoria",
+     "como": "Claves foráneas, una sola meta vigente, baja lógica, operaciones atómicas, valores congelados por comida, bitácora de solo inserción."},
+    {"id": 29, "nombre": "Usabilidad y accesibilidad", "estado": PARCIAL, "pantalla": "panel",
+     "como": "Registro en una frase, preguntas con opciones tocables, diseño adaptable a celular, etiquetas y textos alternativos, enlace para saltar al contenido. Sin auditoría formal WCAG."},
+    {"id": 30, "nombre": "Tecnología y compatibilidad", "estado": DESVIACION, "pantalla": "requerimientos",
+     "como": "Aplicación web adaptable en lugar de app nativa Android/iOS; la API REST v1 queda lista para un cliente móvil."},
+    {"id": 31, "nombre": "Escalabilidad", "estado": DESVIACION, "pantalla": "requerimientos",
+     "como": "SQLite en el prototipo (PostgreSQL en producción); API versionada, proveedor de IA intercambiable y procesos en lote separados de las vistas."},
+    {"id": 32, "nombre": "Disponibilidad y confiabilidad", "estado": CUMPLIDO, "pantalla": "comida_manual",
+     "como": "Degradación controlada de la IA a reglas y búsqueda manual; un doble envío no duplica comidas (clave de idempotencia)."},
+    {"id": 33, "nombre": "Uso responsable y costos de la IA", "estado": CUMPLIDO, "pantalla": "ia_admin",
+     "como": "Solo se envía lo que el léxico no resolvió, con autorización; caché, límite diario, presupuesto mensual con alerta al 80 %."},
+    {"id": 34, "nombre": "Respaldo y recuperación", "estado": PARCIAL, "pantalla": "procesos",
+     "como": "Comando `respaldar` que copia la base en caliente con marca de tiempo y conserva los últimos respaldos; la restauración es reemplazar el archivo."},
+    {"id": 35, "nombre": "Mantenibilidad y calidad", "estado": CUMPLIDO, "pantalla": "requerimientos",
+     "como": "Arquitectura en capas (modelos, servicios, vistas), parámetros como datos y pruebas automatizadas por requerimiento."},
+    {"id": 36, "nombre": "Monitoreo y registro de eventos", "estado": PARCIAL, "pantalla": "auditoria",
+     "como": "Bitácora de eventos, latencia y errores de cada llamada a la IA, registro técnico en archivo sin datos personales."},
 ]

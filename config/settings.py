@@ -161,10 +161,15 @@ if not DEBUG:
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "formatters": {"simple": {"format": "{asctime} {levelname} {name}: {message}", "style": "{"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        # Registro técnico (RNF36): advertencias y errores, sin datos del usuario.
+        "archivo": {"class": "logging.handlers.RotatingFileHandler", "filename": BASE_DIR / "nutriregional.log",
+                    "maxBytes": 1_000_000, "backupCount": 3, "formatter": "simple", "encoding": "utf-8"},
+    },
     "loggers": {
-        # Registra errores técnicos del servicio de IA sin volcar datos del
-        # usuario en los logs.
-        "core.services.ia": {"handlers": ["console"], "level": "WARNING"},
+        "django.request": {"handlers": ["archivo"], "level": "WARNING", "propagate": True},
+        "core": {"handlers": ["console", "archivo"], "level": "WARNING"},
     },
 }

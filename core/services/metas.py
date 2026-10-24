@@ -257,8 +257,10 @@ def evaluar_ajuste_semanal(usuario, hasta=None) -> ResultadoAjuste:
         limitada = vigente.kcal_dia + (cambio_max if diferencia > 0 else -cambio_max)
         limitada, _ = salvaguardas.aplicar_limites(limitada, gasto_nuevo, perfil.sexo)
         proteina, carbohidratos, grasa = macros_para(limitada, actual)
-        calculo.pasos.append(f"El cambio se limitó a {cambio_max:.0f} kcal por semana para evitar saltos bruscos.")
+        calculo.pasos.append(f"El cambio se limitó a {cambio_max:.0f} kcal por semana para evitar saltos bruscos: "
+                             f"tu nueva meta es {limitada:.0f} kcal.")
         calculo.kcal, calculo.proteinas_g, calculo.carbohidratos_g, calculo.grasas_g = r1(limitada), proteina, carbohidratos, grasa
+        calculo.deficit_pct = r1((1 - limitada / gasto_nuevo) * 100) if gasto_nuevo else CERO
     if abs(calculo.kcal - vigente.kcal_dia) < 20:
         return ResultadoAjuste(False, "Tu meta actual sigue siendo adecuada: no hace falta cambiarla.")
 

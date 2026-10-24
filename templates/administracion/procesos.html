@@ -12,5 +12,7 @@
     <p class="texto-secundario">Envía a cada usuario un resumen neutro de su semana (aparece en la consola del servidor como correo).</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
   <form method="post" class="tarjeta">{% csrf_token %}<input type="hidden" name="proceso" value="exactitud"><h2>Pruebas de exactitud</h2>
     <p class="texto-secundario">Ejecuta el conjunto de frases de referencia contra el catálogo actual.</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
+  <form method="post" class="tarjeta">{% csrf_token %}<input type="hidden" name="proceso" value="respaldo"><h2>Respaldo de la base de datos</h2>
+    <p class="texto-secundario">Copia la base en la carpeta <code>respaldos/</code> y conserva los 7 más recientes (RNF34).</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
 </div>
 {% endblock %}
