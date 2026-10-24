@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>{{ titulo }}</h1>
+  {% if intro %}<p class="texto-secundario">{{ intro }}</p>{% endif %}
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% include "generico/_form.html" %}
+    <div class="acciones">
+      <button type="submit" class="boton boton-principal">{{ boton|default:"Guardar" }}</button>
+      {% if volver %}<a class="boton boton-secundario" href="{{ volver }}">Cancelar</a>{% endif %}
+    </div>
+  </form>
+  {% if datalist %}<datalist id="{{ datalist_id }}">{% for opcion in datalist %}<option value="{{ opcion }}">{% endfor %}</datalist>{% endif %}
+</section>
+{% endblock %}

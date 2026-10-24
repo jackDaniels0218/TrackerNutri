@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Administración{% endblock %}
+{% block contenido %}
+<h1>Administración</h1>
+<p class="texto-secundario">Solo datos agregados. Para ver los datos de una persona hace falta su autorización, y el acceso queda en la bitácora.</p>
+<section class="indicadores">
+  {% for rol_nombre, n in panel.usuarios_por_rol.items %}<div class="indicador"><div class="etiqueta-ind">{{ rol_nombre }}</div><div class="valor">{{ n }}</div></div>{% endfor %}
+  <div class="indicador"><div class="etiqueta-ind">Comidas</div><div class="valor">{{ panel.comidas }}</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Sin IA externa</div><div class="valor">{{ panel.sin_ia_pct|default:"—" }} <small>%</small></div></div>
+  <div class="indicador {% if ia.costo_mes >= ia.presupuesto %}indicador-alerta{% endif %}"><div class="etiqueta-ind">Gasto IA del mes</div><div class="valor">{{ ia.costo_mes|floatformat:4 }} <small>USD de {{ ia.presupuesto }}</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Proveedor de IA</div><div class="valor" style="font-size:1.1rem">{{ ia.proveedor }} · {{ ia.disponible|yesno:"disponible,no disponible" }}</div></div>
+</section>
+<div class="rejilla">
+  <a class="tarjeta" href="{% url 'cuentas_admin' %}" style="text-decoration:none;color:inherit"><h2>Cuentas</h2><p class="texto-secundario">Activar, desactivar o bloquear; crear cuentas de Curador y Administrador.</p></a>
+  <a class="tarjeta" href="{% url 'parametros' %}" style="text-decoration:none;color:inherit"><h2>Parámetros</h2><p class="texto-secundario">Factores, límites de seguridad, proveedor de IA, presupuesto.</p></a>
+  <a class="tarjeta" href="{% url 'ia_admin' %}" style="text-decoration:none;color:inherit"><h2>IA y costos</h2><p class="texto-secundario">Uso, latencia, costo, plantillas versionadas.</p></a>
+  <a class="tarjeta" href="{% url 'auditoria' %}" style="text-decoration:none;color:inherit"><h2>Auditoría</h2><p class="texto-secundario">Bitácora, consentimientos, metas y catálogo.</p></a>
+  <a class="tarjeta" href="{% url 'procesos' %}" style="text-decoration:none;color:inherit"><h2>Procesos</h2><p class="texto-secundario">Ajuste semanal, recordatorios, resumen semanal, exactitud.</p></a>
+</div>
+{% endblock %}

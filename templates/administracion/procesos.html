@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Procesos{% endblock %}
+{% block contenido %}
+<h1>Procesos en segundo plano</h1>
+<p class="texto-secundario">En producción se programan (cron o Celery). En el prototipo se pueden ejecutar aquí para demostrarlos, o con <code>python manage.py procesos &lt;nombre&gt;</code>.</p>
+<div class="rejilla">
+  <form method="post" class="tarjeta">{% csrf_token %}<input type="hidden" name="proceso" value="ajuste_semanal"><h2>Ajuste semanal de metas</h2>
+    <p class="texto-secundario">Evalúa a cada usuario con datos suficientes y ajusta su meta dentro de los límites de seguridad.</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
+  <form method="post" class="tarjeta">{% csrf_token %}<input type="hidden" name="proceso" value="recordatorios"><h2>Recordatorios</h2>
+    <p class="texto-secundario">Crea los recordatorios configurados por los usuarios (aquí, los de todo el día, para la demostración).</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
+  <form method="post" class="tarjeta">{% csrf_token %}<input type="hidden" name="proceso" value="resumen_semanal"><h2>Resumen semanal</h2>
+    <p class="texto-secundario">Envía a cada usuario un resumen neutro de su semana (aparece en la consola del servidor como correo).</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
+  <form method="post" class="tarjeta">{% csrf_token %}<input type="hidden" name="proceso" value="exactitud"><h2>Pruebas de exactitud</h2>
+    <p class="texto-secundario">Ejecuta el conjunto de frases de referencia contra el catálogo actual.</p><button class="boton boton-principal" type="submit">Ejecutar</button></form>
+</div>
+{% endblock %}

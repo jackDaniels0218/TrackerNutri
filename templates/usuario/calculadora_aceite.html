@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Calculadora de aceite{% endblock %}
+{% block contenido %}
+<h1>Calculadora de aceite absorbido</h1>
+<p class="texto-secundario">Estima cuánto aceite queda en un alimento frito según su tipo, su tamaño, el tipo de fritura y si se escurrió. Solo cuenta el aceite que retiene el alimento, no el que se queda en la sartén. Es una estimación: no mide la absorción real.</p>
+<div class="rejilla-2">
+  <section class="tarjeta">
+    <form method="get" class="formulario" novalidate>{% include "generico/_form.html" %}
+      <button class="boton boton-principal" type="submit">Calcular</button></form>
+  </section>
+  <section class="tarjeta">
+    {% if resultado %}
+      <h2>Resultado</h2>
+      <div class="indicadores">
+        <div class="indicador"><div class="etiqueta-ind">Aceite estimado</div><div class="valor">{{ resultado.tipico_g }} <small>g</small></div><div class="detalle">entre {{ resultado.minimo_g }} y {{ resultado.maximo_g }} g</div></div>
+        <div class="indicador"><div class="etiqueta-ind">Energía del aceite</div><div class="valor">{{ resultado.kcal_tipico }} <small>kcal</small></div><div class="detalle">entre {{ resultado.kcal_minimo }} y {{ resultado.kcal_maximo }} kcal</div></div>
+      </div>
+      {% if comparacion %}<p>El alimento solo aporta <strong>{{ comparacion.sin_aceite }} kcal</strong>; frito, unas <strong>{{ comparacion.con_aceite }} kcal</strong> (entre {{ comparacion.con_aceite_min }} y {{ comparacion.con_aceite_max }}).</p>{% endif %}
+      <h3>Pasos del cálculo</h3>
+      <ol class="texto-secundario">{% for paso in resultado.pasos %}<li>{{ paso }}</li>{% endfor %}</ol>
+      <p class="texto-secundario pequeno">Los coeficientes son valores de partida que debe validar el nutricionista. El Curador los ajusta en «Cocción».</p>
+    {% else %}
+      <div class="vacio">Elige un alimento y su peso en crudo. Prueba con «Plátano verde», 65 g, fritura profunda (un patacón).</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

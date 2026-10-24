@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}Cuentas{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>Cuentas</h1><p class="texto-secundario">Las cuentas internas se desactivan, nunca se eliminan. Al bloquear o desactivar una cuenta, sus sesiones abiertas se cierran.</p></div>
+  <a class="boton boton-principal" href="{% url 'cuenta_interna_nueva' %}">＋ Cuenta de Curador o Administrador</a></div>
+<form method="get" class="acciones" style="margin-top:0"><input class="campo" style="max-width:280px" name="q" value="{{ q }}" placeholder="Buscar por correo" aria-label="Buscar">
+  <select class="campo" style="max-width:220px" name="rol" aria-label="Rol"><option value="">Todos los roles</option>{% for valor, etiqueta in roles %}<option value="{{ valor }}" {% if request.GET.rol == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}</select>
+  <button class="boton boton-secundario" type="submit">Filtrar</button></form>
+<section class="tarjeta"><div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+  <thead><tr><th>Correo</th><th>Rol</th><th>Estado</th><th>Registro</th><th>Último acceso</th><th>Intentos</th><th>Acción</th></tr></thead>
+  <tbody>{% for c in pagina %}<tr>
+    <td data-titulo="Correo">{{ c.usuario.email|default:c.usuario.username }}{% if c.soporte_autorizado %} <a class="etiqueta etiqueta-azul" href="{% url 'cuenta_soporte' c.pk %}">soporte autorizado · ver</a>{% endif %}</td>
+    <td data-titulo="Rol">{{ c.get_rol_display }}</td>
+    <td data-titulo="Estado"><span class="etiqueta {% if c.estado != 'activo' or c.esta_bloqueada %}etiqueta-alerta{% endif %}">{% if c.esta_bloqueada and c.estado == 'activo' %}bloqueo temporal{% else %}{{ c.get_estado_display }}{% endif %}</span></td>
+    <td data-titulo="Registro">{{ c.usuario.date_joined|date:"d/m/Y" }}</td><td data-titulo="Último acceso">{{ c.usuario.last_login|date:"d/m/Y H:i"|default:"—" }}</td><td data-titulo="Intentos">{{ c.intentos_fallidos }}</td>
+    <td>{% if c.usuario != user %}<form method="post" action="{% url 'cuenta_estado' c.pk %}" style="display:flex;gap:6px">{% csrf_token %}
+      <select class="campo" name="estado" aria-label="Nuevo estado">{% for valor, etiqueta in form_estado.fields.estado.choices %}<option value="{{ valor }}">{{ etiqueta }}</option>{% endfor %}</select>
+      <button class="boton boton-secundario boton-pequeno" type="submit">Aplicar</button></form>{% endif %}</td></tr>{% endfor %}</tbody>
+</table></div>{% include "curacion/_paginacion.html" %}</section>
+{% endblock %}

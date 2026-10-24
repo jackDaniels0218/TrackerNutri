@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Preparaciones regionales{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>Preparaciones regionales</h1><p class="texto-secundario">{{ preparaciones|length }} preparaciones y su deconstrucción en ingredientes crudos por porción típica.</p></div>
+  {% if rol == ROL_CURADOR %}<a class="boton boton-principal" href="{% url 'catalogo_preparacion_nueva' %}">＋ Nueva preparación</a>{% endif %}</div>
+<form method="get" class="acciones" style="margin-top:0"><input class="campo" style="max-width:320px" name="q" value="{{ q }}" placeholder="Buscar por nombre o región" aria-label="Buscar"><button class="boton boton-secundario" type="submit">Buscar</button></form>
+{% for p in preparaciones %}
+<details class="tarjeta" {% if q %}open{% endif %}>
+  <summary style="cursor:pointer"><strong>{{ p.nombre }}</strong> <span class="texto-secundario pequeno">· {{ p.get_categoria_display }} · {{ p.region }} · porción {{ p.peso_porcion_g }} g · {{ p.metodo_defecto }}{% if p.admite_variantes %} · admite variantes{% endif %}</span>
+    {% if p.verificada %}<span class="etiqueta">verificada</span>{% else %}<span class="etiqueta etiqueta-alerta">sin verificar</span>{% endif %}</summary>
+  {% if p.descripcion %}<p class="texto-secundario">{{ p.descripcion }}</p>{% endif %}
+  <div class="tabla-responsiva"><table class="tabla">
+    <thead><tr><th>Ingrediente</th><th class="num">g crudos</th><th>Rol</th><th>Método propio</th></tr></thead>
+    <tbody>{% for c in p.componentes.all %}<tr><td>{{ c.alimento }}{% if c.opcional %} <span class="etiqueta etiqueta-gris">opcional</span>{% endif %}</td><td class="num">{{ c.cantidad_g }}</td><td>{{ c.get_rol_display }}</td><td>{{ c.metodo|default:"— (el de la preparación)" }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% with aviso=p.validar_peso %}{% if aviso %}<p class="aviso aviso-advertencia">{{ aviso }}</p>{% endif %}{% endwith %}
+  {% if rol == ROL_CURADOR %}<div class="acciones"><a class="boton boton-secundario boton-pequeno" href="{% url 'catalogo_preparacion_editar' p.pk %}">Editar</a>
+    {% if not p.verificada %}<form method="post" action="{% url 'catalogo_verificar' 'preparacion' p.pk %}">{% csrf_token %}<input type="hidden" name="volver" value="{% url 'catalogo_preparaciones' %}"><button class="boton boton-secundario boton-pequeno" type="submit">Marcar verificada</button></form>{% endif %}</div>{% endif %}
+</details>
+{% endfor %}
+{% endblock %}

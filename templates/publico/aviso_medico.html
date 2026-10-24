@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Aviso de uso{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>Aviso de uso</h1>
+  <p><strong>NutriRegional no es un servicio médico.</strong> No diagnostica, no trata ni da consejo médico, y no reemplaza a un médico ni a un nutricionista.</p>
+  <p>Todas las cifras de energía y nutrientes son <strong>estimaciones</strong>: dependen del tamaño de la porción, de la receta y de la forma de preparación. Por eso se muestran siempre con un rango y un nivel de confianza.</p>
+  <p>La aplicación no propone déficit calórico a menores de edad, a personas en gestación o lactancia, ni a quien declare una condición que requiera acompañamiento profesional.</p>
+  <p class="aviso aviso-cuidado">{{ contacto }}</p>
+</section>
+{% endblock %}

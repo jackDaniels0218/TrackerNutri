@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Bienvenida{% endblock %}
+{% block contenido %}
+<section class="tarjeta" style="padding:28px">
+  <h1 style="font-size:1.9rem">Cuéntanos qué comiste, con tus palabras.</h1>
+  <p class="texto-secundario" style="font-size:1.05rem">
+    NutriRegional entiende la comida colombiana: sabe que una arepa frita no es una arepa asada,
+    descompone la bandeja paisa en sus ingredientes y estima el aceite que absorbe un patacón.
+    Te muestra siempre un rango y qué tan segura es cada estimación, para que confirmes o corrijas.
+  </p>
+  <blockquote class="cita">«Me comí una arepa frita con carne asada y una Coca-Cola»</blockquote>
+  <div class="acciones">
+    <a class="boton boton-principal" href="{% url 'registro' %}">Crear cuenta</a>
+    <a class="boton boton-secundario" href="{% url 'login' %}">Ya tengo cuenta</a>
+  </div>
+</section>
+<section class="rejilla">
+  <article class="tarjeta"><h2>La IA solo entiende</h2><p class="texto-secundario">Los cálculos los hace siempre un motor determinista con un catálogo curado. Con los mismos datos, el mismo resultado.</p></article>
+  <article class="tarjeta"><h2>Metas que se adaptan</h2><p class="texto-secundario">Tu meta se calcula con tu perfil y se ajusta cada semana según tu ingesta y tu peso, dentro de límites seguros.</p></article>
+  <article class="tarjeta"><h2>Te cuida</h2><p class="texto-secundario">No propone déficit a menores, gestantes ni a quien necesita acompañamiento profesional. Puedes ocultar las cifras cuando quieras.</p></article>
+</section>
+<p class="aviso aviso-informativo">¿Evaluando el proyecto? El <a href="{% url 'requerimientos' %}">mapa de requerimientos</a> enlaza cada requerimiento del SRS con la pantalla donde se demuestra.</p>
+{% endblock %}

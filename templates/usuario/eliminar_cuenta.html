@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titulo %}Eliminar cuenta{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>¿Eliminar tu cuenta?</h1>
+  <p>Se borrarán tu perfil, tus comidas, tus pesajes, tus metas, tus recordatorios y tus notificaciones. Tus correcciones se conservan sin tu nombre para mejorar el catálogo. <strong>No se puede deshacer.</strong></p>
+  <p>Antes, si quieres, <a href="{% url 'exportar_datos' %}">descarga una copia de tus datos</a>.</p>
+  <form method="post" class="formulario">{% csrf_token %}
+    <div class="campo-grupo"><label for="confirmacion">Escribe ELIMINAR para confirmar</label><input class="campo" id="confirmacion" name="confirmacion" autocomplete="off" required></div>
+    <div class="acciones"><button class="boton boton-peligro" type="submit">Eliminar definitivamente</button><a class="boton boton-secundario" href="{% url 'privacidad' %}">Cancelar</a></div>
+  </form>
+</section>
+{% endblock %}

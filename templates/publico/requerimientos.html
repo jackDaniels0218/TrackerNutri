@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}Mapa de requerimientos{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div>
+    <h1>Mapa de requerimientos del SRS</h1>
+    <p class="texto-secundario">Cada actividad del documento de requerimientos, dónde se ve en el prototipo y cómo demostrarla.</p>
+  </div>
+</div>
+<div class="aviso aviso-informativo">
+  <strong>Cuentas de demostración</strong> (después de <code>python manage.py cargar_demo</code>), contraseña <code>NutriDemo2026</code>:
+  <code>usuaria@nutriregional.demo</code> (Usuario con 3 semanas de datos), <code>gestante@nutriregional.demo</code> (salvaguarda activa),
+  <code>curador@nutriregional.demo</code> y <code>admin@nutriregional.demo</code>.
+</div>
+<h2>Requerimientos funcionales (actividades 1 a 22)</h2>
+{% for rf in funcionales %}
+<article class="tarjeta rf" id="rf{{ rf.id }}">
+  <h3><span class="rf-numero">RF{{ rf.id }}</span>{{ rf.nombre }}</h3>
+  <p class="texto-secundario pequeno">Rol: {{ rf.roles|join:", " }} · Modelos: {{ rf.modelos|join:", " }} · Servicios: {{ rf.servicios|join:", " }} · Pruebas: {{ rf.pruebas|join:", " }}</p>
+  <p><strong>Cómo mostrarlo:</strong> {{ rf.demo }}</p>
+  <p class="enlaces">{% for nombre_url, etiqueta in rf.pantallas %}<a class="boton boton-secundario boton-pequeno" href="{% url nombre_url %}">{{ etiqueta }} →</a>{% endfor %}</p>
+</article>
+{% endfor %}
+<h2>Requerimientos no funcionales visibles en el prototipo</h2>
+<div class="tarjeta">
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>RNF</th><th>Nombre</th><th>Cómo se cumple</th><th></th></tr></thead>
+    <tbody>{% for r in no_funcionales %}<tr><td data-titulo="RNF">{{ r.id }}</td><td data-titulo="Nombre">{{ r.nombre }}</td><td data-titulo="Cómo">{{ r.como }}</td><td><a href="{% url r.pantalla %}">Ver</a></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="texto-secundario pequeno">Las diferencias del prototipo frente al SRS (web en lugar de app nativa, SQLite en lugar de PostgreSQL, etc.) están en <code>docs/desviaciones.md</code>.</p>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-# Dependencias del Tracker Nutricional.
+# Dependencias de NutriRegional.
 # Instalar con:  pip install -r requirements.txt
 
 # Framework web: modelos, ORM, plantillas, autenticación y panel de admin.
@@ -7,9 +7,13 @@ Django==5.1.15
 # API REST: serializadores y permisos para los endpoints de /api/.
 djangorestframework==3.17.2
 
-# Cliente oficial de la API de OpenAI, usado solo en core/services/ai_service.py.
-# Si no configuras OPENAI_API_KEY, el proyecto funciona igual en modo manual.
+# Cliente oficial de la API de OpenAI, usado solo en core/services/ia.py.
+# Si no configuras OPENAI_API_KEY, el proyecto funciona igual solo con reglas.
 openai==3.35.1
 
 # Lee el archivo .env para no escribir secretos en el código.
 python-dotenv==1.2.4
+
+# Genera el esquema OpenAPI de la API (/api/v1/esquema/).
+uritemplate==4.1.1
+inflection==0.5.1

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Alimentos base{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>Alimentos base</h1><p class="texto-secundario">{{ total }} alimentos · valores por 100 g · los datos desconocidos se muestran vacíos, nunca como cero.</p></div>
+  {% if rol == ROL_CURADOR %}<a class="boton boton-principal" href="{% url 'catalogo_alimento_nuevo' %}">＋ Nuevo alimento</a>{% endif %}</div>
+<form method="get" class="acciones" style="margin-top:0">
+  <input class="campo" style="max-width:320px" name="q" value="{{ q }}" placeholder="Buscar por nombre o categoría" aria-label="Buscar">
+  <select class="campo" style="max-width:200px" name="verificado" aria-label="Verificación"><option value="">Todos</option><option value="si" {% if request.GET.verificado == "si" %}selected{% endif %}>Verificados</option><option value="no" {% if request.GET.verificado == "no" %}selected{% endif %}>Sin verificar</option></select>
+  <button class="boton boton-secundario" type="submit">Filtrar</button>
+</form>
+<section class="tarjeta">
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Nombre</th><th>Categoría</th><th>Estado</th><th class="num">kcal</th><th class="num">Prot.</th><th class="num">Carb.</th><th class="num">Azúc.</th><th class="num">Grasa</th><th>Fuente</th><th>v</th><th></th></tr></thead>
+    <tbody>{% for a in pagina %}<tr {% if a.estado == "inactivo" %}class="descartado"{% endif %}>
+      <td data-titulo="Nombre"><strong>{{ a.nombre }}</strong>{% if a.densidad %} <span class="etiqueta etiqueta-azul">líquido</span>{% endif %}</td>
+      <td data-titulo="Categoría">{{ a.categoria }}</td><td data-titulo="Estado">{{ a.get_estado_fisico_display }}</td>
+      <td class="num" data-titulo="kcal">{{ a.kcal }}</td><td class="num" data-titulo="Proteínas">{{ a.proteinas }}</td><td class="num" data-titulo="Carbohidratos">{{ a.carbohidratos }}</td>
+      <td class="num" data-titulo="Azúcares">{{ a.azucares|default_if_none:"" }}</td><td class="num" data-titulo="Grasas">{{ a.grasas }}</td>
+      <td data-titulo="Fuente">{{ a.get_fuente_display }} {% if a.verificado %}<span class="etiqueta">verificado</span>{% else %}<span class="etiqueta etiqueta-alerta">sin verificar</span>{% endif %}</td>
+      <td data-titulo="Versión">{{ a.version.numero|default:"" }}</td>
+      <td>{% if rol == ROL_CURADOR %}<a href="{% url 'catalogo_alimento_editar' a.pk %}">Editar</a>
+        {% if not a.verificado %}<form method="post" action="{% url 'catalogo_verificar' 'alimento' a.pk %}" class="formulario-en-linea">{% csrf_token %}<input type="hidden" name="volver" value="{{ request.get_full_path }}"><button class="boton-enlace pequeno" type="submit">Verificar</button></form>{% endif %}{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% include "curacion/_paginacion.html" %}
+</section>
+{% endblock %}
