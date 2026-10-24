@@ -14,6 +14,7 @@ from django.core.management import call_command
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from core.forms import CambiarEstadoCuentaForm, CuentaInternaForm, ParametroForm
@@ -132,12 +133,20 @@ def ia_admin(request):
     return render(request, "administracion/ia.html", {"ia": ia.resumen_uso(30)})
 
 
+def _fecha_o_none(texto):
+    try:
+        return parse_date(texto or "")
+    except ValueError:
+        return None
+
+
 @curador_o_admin
 def auditoria_vista(request):
     """Bitácora, consentimientos, historial de metas y del catálogo. Solo consulta."""
     pestana = request.GET.get("ver", "bitacora")
     consulta = request.GET.get("q", "").strip()
-    desde, hasta = request.GET.get("desde"), request.GET.get("hasta")
+    # Una fecha mal escrita en la URL se ignora en lugar de producir un error.
+    desde, hasta = (_fecha_o_none(request.GET.get(n)) for n in ("desde", "hasta"))
     if pestana == "consentimientos":
         lista = Consentimiento.objects.select_related("usuario")
     elif pestana == "metas":
@@ -158,7 +167,8 @@ def auditoria_vista(request):
         lista = lista.filter(usuario__email__icontains=request.GET["usuario"])
     pagina = Paginator(lista, 50).get_page(request.GET.get("pagina"))
     return render(request, "administracion/auditoria.html", {"pagina": pagina, "ver": pestana, "q": consulta,
-                                                             "desde": desde or "", "hasta": hasta or "",
+                                                             "desde": desde.isoformat() if desde else "",
+                                                             "hasta": hasta.isoformat() if hasta else "",
                                                              "filtro_usuario": request.GET.get("usuario", "")})
 
 

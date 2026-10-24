@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static nutri %}
+{% load l10n static nutri %}
 {% block titulo %}{% if comida.estado == "interpretada" %}Revisa y confirma{% else %}Editar comida{% endif %}{% endblock %}
 {% block contenido %}
 <section class="tarjeta">
@@ -35,7 +35,7 @@
               {% if item.tiene_valores %}{% include "usuario/_item_detalle.html" %}{% endif %}
             </td>
             <td data-titulo="Cantidad (g)">
-              <input class="campo" type="number" step="0.1" min="0.1" name="item-{{ item.pk }}-cantidad" value="{{ item.cantidad_g|default_if_none:'' }}" aria-label="Gramos">
+              <input class="campo" type="number" step="0.1" min="0.1" name="item-{{ item.pk }}-cantidad" value="{{ item.cantidad_g|default_if_none:''|unlocalize }}" aria-label="Gramos">
               {% if item.unidad_original and item.fuente_cantidad != "gramos" %}<div class="texto-secundario pequeno">{{ item.cantidad_original|default:""|floatformat:"-1" }} {{ item.unidad_original }}{% if item.fuente_cantidad == "defecto" %} (por defecto){% endif %}</div>{% endif %}
             </td>
             <td data-titulo="Preparación">

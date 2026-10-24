@@ -156,8 +156,10 @@ class AuditoriaTests(BaseNutri):
     def test_pantalla_de_auditoria_con_filtro(self):
         admin = self.crear_admin()
         self.crear_usuario()
-        r = self.entrar(admin).get(reverse("auditoria"), {"accion": "cuenta_creada"})
+        r = self.entrar(admin).get(reverse("auditoria"), {"q": "cuenta_creada"})
         self.assertContains(r, "cuenta_creada")
+        r = self.client.get(reverse("auditoria"), {"desde": "no-es-fecha", "hasta": "2026-13-45"})
+        self.assertEqual(r.status_code, 200)
         self.assertEqual(self.entrar(self.crear_usuario("otro@prueba.co")).get(reverse("auditoria")).status_code, 403)
 
 

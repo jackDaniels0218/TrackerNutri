@@ -28,6 +28,9 @@ class RegistroPorTextoTests(BaseNutri):
         self.client.post(reverse("comida_aclarar", args=[comida.pk]), respuestas)
         r = self.client.get(reverse("comida_confirmar", args=[comida.pk]))
         self.assertContains(r, "Arepa")
+        # Los campos numéricos llevan punto decimal: con coma el navegador los deja vacíos.
+        item = comida.items.first()
+        self.assertContains(r, f'name="item-{item.pk}-cantidad" value="{item.cantidad_g}"')
         self.assertContains(r, "confianza")
         self.client.post(reverse("comida_confirmar", args=[comida.pk]), {"accion": "confirmar"})
         comida.refresh_from_db()
