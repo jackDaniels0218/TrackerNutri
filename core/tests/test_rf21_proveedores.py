@@ -30,8 +30,9 @@ CLAVE_COMPATIBLE = "gsk-clave-del-servicio-gratuito"
 class ServidorCompatible(ThreadingHTTPServer):
     """Imita /v1/chat/completions de un servicio compatible con OpenAI."""
 
-    def __init__(self, admite_esquema=False, estado_forzado=None):
+    def __init__(self, admite_esquema=False, estado_forzado=None, modelos=None):
         super().__init__(("127.0.0.1", 0), ManejadorCompatible)
+        self.modelos = modelos
         self.admite_esquema = admite_esquema
         self.estado_forzado = estado_forzado
         self.peticiones = []
@@ -53,12 +54,19 @@ class ManejadorCompatible(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(datos)
 
+    def do_GET(self):
+        lista = [{"id": m, "object": "model", "created": 0, "owned_by": "x"} for m in self.server.modelos or []]
+        self._responder(200, {"object": "list", "data": lista})
+
     def do_POST(self):
         cuerpo = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         self.server.peticiones.append({"autorizacion": self.headers.get("Authorization"), "cuerpo": cuerpo})
         if self.server.estado_forzado:
             estado, codigo = self.server.estado_forzado
             return self._responder(estado, {"error": {"message": codigo, "type": codigo, "code": codigo}})
+        if self.server.modelos is not None and cuerpo["model"] not in self.server.modelos:
+            return self._responder(404, {"error": {"message": f"The model `{cuerpo['model']}` does not exist",
+                                                   "type": "invalid_request_error", "code": "model_not_found"}})
         formato = cuerpo["response_format"]["type"]
         if formato == "json_schema" and not self.server.admite_esquema:
             return self._responder(400, {"error": {"message": "response_format json_schema is not supported by this model",
@@ -153,6 +161,21 @@ class ProveedorCompatibleTests(BaseNutri):
             self.servidor(estado_forzado=(estado, "error"))
             ia.interpretar_fragmentos(self.crear_usuario(f"u{estado}@prueba.co", acepta_ia=True), [self.TEXTO])
             self.assertTrue(UsoIA.objects.filter(tipo_error=motivo).exists(), motivo)
+
+    def test_probar_ia_lista_los_modelos_y_guarda_el_elegido(self):
+        import io
+
+        from django.core.management import CommandError, call_command
+
+        from core.services.parametros import parametro
+
+        self.servidor(modelos=["llama-3.1-8b-instant", "openai/gpt-oss-20b"])
+        salida = io.StringIO()
+        with self.assertRaises(CommandError):
+            call_command("probar_ia", stdout=salida)
+        self.assertIn("openai/gpt-oss-20b", salida.getvalue())
+        call_command("probar_ia", modelo="openai/gpt-oss-20b", guardar=True, stdout=io.StringIO())
+        self.assertEqual(parametro("ia_modelo_compatible"), "openai/gpt-oss-20b")
 
     def test_sin_clave_no_esta_disponible(self):
         self.usar("compatible")

@@ -102,7 +102,7 @@ python manage.py probar_ia      # comprueba la conexión real (gasta crédito)
 
 | Comando | Para qué |
 |---|---|
-| `python manage.py test` | Las 177 pruebas automatizadas, organizadas por requerimiento |
+| `python manage.py test` | Las 178 pruebas automatizadas, organizadas por requerimiento |
 | `python manage.py inicializar_sistema` | Carga inicial idempotente y publicación de la v1 del catálogo |
 | `python manage.py cargar_demo` | Cuentas y datos de demostración (`--dias 30` para más historial) |
 | `python manage.py procesos ajuste_semanal` | Ajuste semanal de metas (RF16) |

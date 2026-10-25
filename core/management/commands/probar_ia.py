@@ -23,9 +23,10 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from core.services import ia
+from core.models import Parametro
+from core.services import auditoria, ia
 from core.services.interpretacion import interpretar
-from core.services.parametros import parametro
+from core.services.parametros import limpiar_cache, parametro
 
 TEXTO_POR_DEFECTO = "un plato de sancocho trifásico, un pedazo de bollo limpio y un jugo de lulo"
 
@@ -35,6 +36,21 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--texto", default=TEXTO_POR_DEFECTO)
+        parser.add_argument("--modelo", help="Prueba este modelo en lugar del configurado.")
+        parser.add_argument("--guardar", action="store_true",
+                            help="Si la prueba funciona, guarda --modelo en los parámetros del sistema.")
+
+    def _listar_modelos(self, proveedor) -> None:
+        """Muestra los modelos que la clave puede usar, para elegir uno que exista."""
+        try:
+            modelos = sorted(m.id for m in proveedor._cliente().models.list())
+        except Exception as exc:  # noqa: BLE001 - solo es una ayuda para el diagnóstico
+            self.stdout.write(self.style.WARNING(f"   No se pudo obtener la lista de modelos ({type(exc).__name__})."))
+            return
+        self.stdout.write(self.style.WARNING(f"   El modelo «{proveedor.modelo}» no existe para esta clave. Modelos disponibles:"))
+        for modelo in modelos:
+            self.stdout.write(f"     - {modelo}")
+        self.stdout.write("   Prueba uno y guárdalo con:  python manage.py probar_ia --modelo NOMBRE --guardar")
 
     @staticmethod
     def _que_falta(proveedor) -> str:
@@ -63,6 +79,8 @@ class Command(BaseCommand):
             raise CommandError("La IA está desactivada (parámetro ia_proveedor = 'ninguno').")
         if not proveedor.disponible:
             raise CommandError(self._que_falta(proveedor))
+        if opciones["modelo"]:
+            proveedor.modelo = opciones["modelo"]
         destino = f" en {proveedor.base_url}" if proveedor.base_url else ""
         self.stdout.write(self.style.SUCCESS(f"   Configurado · modelo {proveedor.modelo}{destino}"))
 
@@ -73,14 +91,28 @@ class Command(BaseCommand):
             contenido, entrada, salida = proveedor.llamar([texto], ia.PLANTILLA_VIGENTE)
             items = ia.validar_respuesta(contenido, 1)
         except ia.ProveedorNoDisponible as exc:
+            if str(exc) == "modelo_no_encontrado":
+                self._listar_modelos(proveedor)
             raise CommandError(f"El proveedor no respondió: {exc}") from exc
         except ia.RespuestaInvalida as exc:
             raise CommandError(f"Respuesta fuera del esquema: {exc}") from exc
         ms = int((time.monotonic() - inicio) * 1000)
-        self.stdout.write(self.style.SUCCESS(
-            f"   Respuesta válida en {ms} ms · {entrada}+{salida} tokens · ~{ia.costo(entrada, salida):.6f} USD"
-        ))
+        precio = f"~{ia.costo(entrada, salida):.6f} USD" if proveedor.cobra else "sin costo (nivel gratuito)"
+        self.stdout.write(self.style.SUCCESS(f"   Respuesta válida en {ms} ms · {entrada}+{salida} tokens · {precio}"))
         self.stdout.write(f"   {items[0]}")
+
+        if opciones["modelo"]:
+            if not opciones["guardar"]:
+                self.stdout.write(self.style.SUCCESS(
+                    f"El modelo {proveedor.modelo} funciona. Para usarlo en la aplicación: "
+                    f"python manage.py probar_ia --modelo {proveedor.modelo} --guardar"))
+                return
+            clave = "ia_modelo_compatible" if proveedor.nombre == "compatible" else "ia_modelo"
+            Parametro.objects.filter(clave=clave).update(valor=proveedor.modelo)
+            limpiar_cache()
+            auditoria.registrar("parametro_cambiado", entidad="Parametro", entidad_id=clave,
+                                detalle=f"{proveedor.modelo} (desde probar_ia)")
+            self.stdout.write(self.style.SUCCESS(f"   Guardado: {clave} = {proveedor.modelo}"))
 
         self.stdout.write("3. Interpretación completa (sin guardar):")
         resultado = interpretar(texto, registrar_pendientes=False)
