@@ -79,9 +79,6 @@
               <form action="{% url 'logout' %}" method="post" class="formulario-en-linea">{% csrf_token %}
                 <button type="submit">Salir</button>
               </form>
-              <form action="{% url 'cerrar_sesiones' %}" method="post" class="formulario-en-linea">{% csrf_token %}
-                <button type="submit">Cerrar sesión en todos los dispositivos</button>
-              </form>
             </div>
           </details>
         </nav>

@@ -9,7 +9,6 @@
   <hr class="separador">
   <div class="acciones">
     <a class="boton boton-secundario" href="{% url 'password_change' %}">Cambiar contraseña</a>
-    <form method="post" action="{% url 'cerrar_sesiones' %}" class="formulario-en-linea">{% csrf_token %}<button class="boton boton-secundario" type="submit">Cerrar sesión en todos los dispositivos</button></form>
   </div>
   {% if cuenta_usuario.es_interna %}<p class="texto-secundario pequeno">Las cuentas de Curador y Administrador no se eliminan: el Administrador las desactiva.</p>{% endif %}
 </section>
