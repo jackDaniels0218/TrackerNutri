@@ -76,8 +76,21 @@ OPENAI_API_KEY=sk-...
 
 El modelo, el tiempo de espera, el límite diario por usuario y el presupuesto
 mensual son **parámetros del sistema** que el Administrador cambia en
-*Parámetros*. También se puede usar un modelo local compatible con la API de
-OpenAI (Ollama, LM Studio) con `ia_proveedor = local` e `ia_url_local`.
+*Parámetros*.
+
+**Sin pagar:** cualquier servicio compatible con la API de OpenAI que tenga
+nivel gratuito ([lista](https://github.com/raullenchai/free-llm-api-resources)),
+por ejemplo Groq:
+
+```
+IA_COMPATIBLE_API_KEY=gsk_...
+```
+
+y en *Parámetros*: `ia_proveedor = compatible`, `ia_url_compatible =
+https://api.groq.com/openai/v1`, `ia_modelo_compatible = llama-3.3-70b-versatile`.
+Para OpenRouter: `https://openrouter.ai/api/v1` y un modelo terminado en
+`:free`; para Google AI Studio: `https://generativelanguage.googleapis.com/v1beta/openai/`.
+También sirve un modelo local (Ollama, LM Studio) con `ia_proveedor = local`.
 
 ```bash
 python manage.py probar_ia      # comprueba la conexión real (gasta crédito)
@@ -89,7 +102,7 @@ python manage.py probar_ia      # comprueba la conexión real (gasta crédito)
 
 | Comando | Para qué |
 |---|---|
-| `python manage.py test` | Las 166 pruebas automatizadas, organizadas por requerimiento |
+| `python manage.py test` | Las 177 pruebas automatizadas, organizadas por requerimiento |
 | `python manage.py inicializar_sistema` | Carga inicial idempotente y publicación de la v1 del catálogo |
 | `python manage.py cargar_demo` | Cuentas y datos de demostración (`--dias 30` para más historial) |
 | `python manage.py procesos ajuste_semanal` | Ajuste semanal de metas (RF16) |

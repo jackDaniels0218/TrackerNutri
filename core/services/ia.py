@@ -3,9 +3,11 @@ RF21 Integración con el proveedor de IA (y RF33 Uso responsable y costos).
 
 Aísla la IA para poder cambiarla, controlarla y limitar su costo:
 
-* Adaptador de proveedor: la misma interfaz sirve para la API de OpenAI o
-  para un modelo local compatible (Ollama, LM Studio). El activo se elige
-  con el parámetro `ia_proveedor`.
+* Adaptador de proveedor: la misma interfaz sirve para la API de OpenAI,
+  para un servicio externo compatible con ella (Groq, OpenRouter, Google AI
+  Studio, Cerebras, Mistral…, muchos con nivel gratuito) o para un modelo
+  local (Ollama, LM Studio). El activo se elige con el parámetro
+  `ia_proveedor`; cada servicio externo usa su propia clave.
 * Plantillas de instrucciones versionadas y salida JSON validada contra un
   esquema. Si la respuesta no cumple, se reintenta una vez y luego se
   descarta.
@@ -183,6 +185,8 @@ class ProveedorOpenAI:
 
     nombre = "openai"
     motor = "ia_externa"
+    externo = True  # el texto sale del servidor: requiere la autorización de IA del usuario
+    cobra = True  # cuenta para el presupuesto mensual
 
     def __init__(self):
         self.clave = getattr(settings, "OPENAI_API_KEY", "")
@@ -197,26 +201,45 @@ class ProveedorOpenAI:
         import openai
 
         return openai.OpenAI(
-            api_key=self.clave or "local", base_url=self.base_url,
+            api_key=self.clave or "sin-clave", base_url=self.base_url,
             timeout=float(parametro("ia_timeout_s")), max_retries=0,
+        )
+
+    def _pedir(self, fragmentos: list[str], plantilla: str, formato: str):
+        """
+        `formato` "esquema" pide la salida con el esquema estricto; "json" solo
+        pide JSON y copia el esquema en las instrucciones (para modelos que no
+        admiten el modo estricto). En ambos casos validar_respuesta() decide.
+        """
+        instrucciones = PLANTILLAS[plantilla]
+        if formato == "esquema":
+            response_format = {
+                "type": "json_schema",
+                "json_schema": {"name": "alimentos", "schema": ESQUEMA, "strict": True},
+            }
+        else:
+            response_format = {"type": "json_object"}
+            instrucciones += "\nResponde solo con un objeto JSON que cumpla este esquema:\n" + json.dumps(ESQUEMA)
+        return self._cliente().chat.completions.create(
+            model=self.modelo,
+            messages=[
+                {"role": "system", "content": instrucciones},
+                {"role": "user", "content": json.dumps({"fragmentos": fragmentos}, ensure_ascii=False)},
+            ],
+            response_format=response_format,
+            temperature=0,
         )
 
     def llamar(self, fragmentos: list[str], plantilla: str) -> tuple[str, int, int]:
         import openai
 
         try:
-            respuesta = self._cliente().chat.completions.create(
-                model=self.modelo,
-                messages=[
-                    {"role": "system", "content": PLANTILLAS[plantilla]},
-                    {"role": "user", "content": json.dumps({"fragmentos": fragmentos}, ensure_ascii=False)},
-                ],
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": {"name": "alimentos", "schema": ESQUEMA, "strict": True},
-                },
-                temperature=0,
-            )
+            try:
+                respuesta = self._pedir(fragmentos, plantilla, "esquema")
+            except (openai.BadRequestError, openai.UnprocessableEntityError) as exc:
+                # El modelo no admite el esquema estricto: se pide JSON simple.
+                logger.info("El modelo %s rechazó el esquema estricto (%s); se usa JSON simple.", self.modelo, exc.status_code)
+                respuesta = self._pedir(fragmentos, plantilla, "json")
         except openai.RateLimitError as exc:
             codigo = getattr(exc, "code", None) or ""
             cuerpo = getattr(exc, "body", None)
@@ -225,8 +248,10 @@ class ProveedorOpenAI:
             if "insufficient_quota" in (codigo or "") or "insufficient_quota" in str(exc):
                 raise ProveedorNoDisponible("sin_saldo") from exc
             raise ProveedorNoDisponible("limite_proveedor") from exc
-        except openai.AuthenticationError as exc:
+        except (openai.AuthenticationError, openai.PermissionDeniedError) as exc:
             raise ProveedorNoDisponible("clave_invalida") from exc
+        except openai.NotFoundError as exc:
+            raise ProveedorNoDisponible("modelo_no_encontrado") from exc
         except openai.APITimeoutError as exc:
             raise ProveedorNoDisponible("tiempo_agotado") from exc
         except openai.APIConnectionError as exc:
@@ -244,6 +269,27 @@ class ProveedorOpenAI:
         return contenido, entrada, salida
 
 
+class ProveedorCompatible(ProveedorOpenAI):
+    """
+    Servicio externo con API compatible con la de OpenAI, por ejemplo con nivel
+    gratuito: Groq, OpenRouter, Google AI Studio, Cerebras o Mistral. Usa su
+    propia clave (IA_COMPATIBLE_API_KEY): la de OpenAI nunca se envía a otro
+    servicio. Como el texto sale del servidor, requiere la autorización de IA.
+    """
+
+    nombre = "compatible"
+    cobra = False  # nivel gratuito: lo limitan las cuotas del servicio, no el presupuesto
+
+    def __init__(self):
+        self.clave = getattr(settings, "IA_COMPATIBLE_API_KEY", "")
+        self.modelo = parametro("ia_modelo_compatible")
+        self.base_url = parametro("ia_url_compatible")
+
+    @property
+    def disponible(self) -> bool:
+        return bool(self.clave and self.base_url and self.modelo)
+
+
 class ProveedorLocal(ProveedorOpenAI):
     """
     Modelo de lenguaje local con API compatible con OpenAI (Ollama, LM Studio).
@@ -252,9 +298,12 @@ class ProveedorLocal(ProveedorOpenAI):
 
     nombre = "local"
     motor = "modelo_local"
+    externo = False
+    cobra = False
 
     def __init__(self):
         super().__init__()
+        self.clave = ""  # nunca se envía una clave de un servicio externo a otra URL
         self.base_url = parametro("ia_url_local")
 
     @property
@@ -266,6 +315,8 @@ def proveedor_activo():
     elegido = parametro("ia_proveedor")
     if elegido == "openai":
         return ProveedorOpenAI()
+    if elegido == "compatible":
+        return ProveedorCompatible()
     if elegido == "local":
         return ProveedorLocal()
     return None
@@ -343,7 +394,7 @@ def interpretar_fragmentos(usuario, fragmentos: list[str]) -> ResultadoIA:
         return resultado
 
     cuenta = getattr(usuario, "cuenta", None)
-    if proveedor.nombre == "openai" and cuenta is not None and not cuenta.acepta_ia:
+    if proveedor.externo and cuenta is not None and not cuenta.acepta_ia:
         UsoIA.objects.create(resultado=UsoIA.Resultado.SIN_CONSENTIMIENTO, **registro)
         resultado.motivo = MENSAJES["sin_consentimiento"]
         return resultado
@@ -366,7 +417,7 @@ def interpretar_fragmentos(usuario, fragmentos: list[str]) -> ResultadoIA:
 
     presupuesto = parametro("ia_presupuesto_mensual_usd")
     gastado = gasto_del_mes()
-    if proveedor.nombre == "openai" and gastado >= presupuesto:
+    if proveedor.cobra and gastado >= presupuesto:
         UsoIA.objects.create(resultado=UsoIA.Resultado.PRESUPUESTO, **registro)
         _avisar_administradores("presupuesto", "Presupuesto de IA agotado",
                                 f"Se gastaron {gastado:.2f} USD de {presupuesto} USD este mes. La interpretación sigue solo con reglas.")
@@ -394,14 +445,15 @@ def interpretar_fragmentos(usuario, fragmentos: list[str]) -> ResultadoIA:
                 return resultado
             continue
 
+        gasto = costo(entrada, salida) if proveedor.cobra else Decimal("0")
         UsoIA.objects.create(
             resultado=UsoIA.Resultado.EXITO, latencia_ms=int((time.monotonic() - inicio) * 1000),
-            tokens_entrada=entrada, tokens_salida=salida, costo_usd=costo(entrada, salida), **registro,
+            tokens_entrada=entrada, tokens_salida=salida, costo_usd=gasto, **registro,
         )
         CacheInterpretacion.objects.get_or_create(
             clave=clave, defaults={"version_plantilla": PLANTILLA_VIGENTE, "resultado": items}
         )
-        nuevo_gasto = gastado + costo(entrada, salida)
+        nuevo_gasto = gastado + gasto
         if nuevo_gasto >= presupuesto * parametro("ia_alerta_presupuesto_pct") / 100:
             _avisar_administradores("alerta", "Presupuesto de IA cerca del límite",
                                     f"Se han gastado {nuevo_gasto:.4f} USD de {presupuesto} USD este mes.")

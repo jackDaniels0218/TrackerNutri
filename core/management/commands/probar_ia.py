@@ -10,7 +10,7 @@ comando SÍ llama al proveedor configurado. Por eso no forma parte de
 
 Pasos:
   1. ¿Hay un proveedor activo y configurado? (parámetro ia_proveedor y la
-     variable de entorno OPENAI_API_KEY, o ia_url_local para un modelo local)
+     clave OPENAI_API_KEY o IA_COMPATIBLE_API_KEY, o ia_url_local)
   2. ¿El proveedor responde con el JSON del esquema? (RF13, sin pasar por
      caché ni límites, para ver la respuesta cruda validada)
   3. ¿La interpretación completa (léxico → IA → catálogo) produce ítems
@@ -40,8 +40,11 @@ class Command(BaseCommand):
         if proveedor is None:
             raise CommandError("La IA está desactivada (parámetro ia_proveedor = 'ninguno').")
         if not proveedor.disponible:
-            raise CommandError("Falta OPENAI_API_KEY en .env (o ia_url_local para el modelo local).")
-        self.stdout.write(self.style.SUCCESS(f"   Configurado · modelo {proveedor.modelo}"))
+            faltante = {"openai": "OPENAI_API_KEY en .env", "compatible": "IA_COMPATIBLE_API_KEY en .env y los parámetros "
+                        "ia_url_compatible e ia_modelo_compatible", "local": "el parámetro ia_url_local"}[proveedor.nombre]
+            raise CommandError(f"Falta {faltante}.")
+        destino = f" en {proveedor.base_url}" if proveedor.base_url else ""
+        self.stdout.write(self.style.SUCCESS(f"   Configurado · modelo {proveedor.modelo}{destino}"))
 
         texto = opciones["texto"]
         self.stdout.write(f"2. Llamada directa con: «{texto}»")

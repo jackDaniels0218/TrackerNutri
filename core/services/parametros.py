@@ -65,8 +65,10 @@ DEFINICIONES: dict[str, tuple[str, str, object, str]] = {
     "exactitud_coccion_min": ("decimal", N, "90", "Exactitud mínima del método de cocción para publicar (%)."),
     "error_energia_max": ("decimal", N, "15", "Error medio de energía máximo para publicar (%)."),
     # --- Proveedor de IA (actividades 21 y 33) ---
-    "ia_proveedor": ("texto", I, "openai", "Proveedor activo: openai, local o ninguno."),
+    "ia_proveedor": ("texto", I, "openai", "Proveedor activo: openai, compatible (servicio externo compatible con OpenAI, p. ej. Groq u OpenRouter), local o ninguno."),
     "ia_modelo": ("texto", I, "gpt-4o-mini", "Modelo del proveedor."),
+    "ia_url_compatible": ("texto", I, "https://api.groq.com/openai/v1", "URL del servicio compatible. Ejemplos: https://api.groq.com/openai/v1, https://openrouter.ai/api/v1, https://generativelanguage.googleapis.com/v1beta/openai/, https://api.cerebras.ai/v1."),
+    "ia_modelo_compatible": ("texto", I, "llama-3.3-70b-versatile", "Modelo del servicio compatible (con su nombre exacto en ese servicio)."),
     "ia_url_local": ("texto", I, "http://localhost:11434/v1", "URL de un modelo local compatible con la API de OpenAI (p. ej. Ollama)."),
     "ia_timeout_s": ("decimal", I, "10", "Tiempo máximo de espera del proveedor (segundos)."),
     "ia_limite_diario_usuario": ("entero", I, 30, "Interpretaciones con IA por usuario y día."),

@@ -165,9 +165,9 @@ REQUERIMIENTOS = [
     {
         "id": 21, "nombre": "Módulo Integración con el proveedor de IA", "tipo": "funcional", "roles": [A],
         "pantallas": [("ia_admin", "Uso, costo, plantillas y proveedor")],
-        "demo": "Ver el consumo y el costo; cambiar el proveedor a «ninguno» y comprobar que la interpretación sigue con reglas.",
+        "demo": "Ver el consumo y el costo; cambiar el proveedor a «compatible» (Groq, OpenRouter… gratuitos) o a «ninguno» y comprobar que la interpretación sigue con reglas.",
         "modelos": ["UsoIA", "CacheInterpretacion"], "servicios": ["ia.py"],
-        "pruebas": ["test_rf11_rf21_rf22_sistema"],
+        "pruebas": ["test_rf11_rf21_rf22_sistema", "test_rf21_proveedores"],
     },
     {
         "id": 22, "nombre": "Módulo Trazabilidad y auditoría", "tipo": "funcional", "roles": [A, C],

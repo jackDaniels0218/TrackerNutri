@@ -147,6 +147,9 @@ REST_FRAMEWORK = {
 # cambia desde la aplicación. Sin clave, la interpretación usa solo el léxico
 # y las reglas, y queda la búsqueda manual.
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+# Clave de un servicio compatible con OpenAI (Groq, OpenRouter, Google AI Studio…).
+# Es otra variable para que la clave de OpenAI nunca se envíe a otro servicio.
+IA_COMPATIBLE_API_KEY = os.environ.get("IA_COMPATIBLE_API_KEY", "")
 
 # --- Seguridad para despliegue ----------------------------------------------
 # Con DEBUG=False se activan las cabeceras y cookies seguras.

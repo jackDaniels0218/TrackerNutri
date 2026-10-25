@@ -32,7 +32,7 @@ Cuentas de demostración (`python manage.py cargar_demo`), contraseña `NutriDem
 | 18 | Módulo Gráficos de tendencias y reportes | Usuario, Administrador, Curador | [Gráficos 7/30/90 días](/reportes/), [Exportar CSV](/reportes/exportar.csv), [Panel agregado](/curacion/indicadores/) | `test_rf18_rf20_reportes_notificaciones` |
 | 19 | Módulo Curación del catálogo y mejora continua | Curador | [Bandeja de pendientes](/curacion/), [Versiones e historial](/curacion/versiones/), [Pruebas de exactitud](/curacion/exactitud/) | `test_rf19_curacion` |
 | 20 | Módulo Notificaciones y recordatorios | Usuario, Curador, Administrador | [Notificaciones](/notificaciones/), [Configurar recordatorios](/recordatorios/) | `test_rf18_rf20_reportes_notificaciones` |
-| 21 | Módulo Integración con el proveedor de IA | Administrador | [Uso, costo, plantillas y proveedor](/administracion/ia/) | `test_rf11_rf21_rf22_sistema` |
+| 21 | Módulo Integración con el proveedor de IA | Administrador | [Uso, costo, plantillas y proveedor](/administracion/ia/) | `test_rf11_rf21_rf22_sistema`, `test_rf21_proveedores` |
 | 22 | Módulo Trazabilidad y auditoría | Administrador, Curador | [Bitácora, consentimientos y metas](/administracion/auditoria/), [Historial del catálogo](/curacion/versiones/) | `test_rf11_rf21_rf22_sistema` |
 
 ## Detalle por requerimiento
@@ -223,8 +223,8 @@ Cuentas de demostración (`python manage.py cargar_demo`), contraseña `NutriDem
 - **Pantallas:** Uso, costo, plantillas y proveedor (`/administracion/ia/`)
 - **Modelos:** UsoIA, CacheInterpretacion
 - **Servicios (`core/services/`):** ia.py
-- **Pruebas (`core/tests/`):** test_rf11_rf21_rf22_sistema
-- **Cómo demostrarlo:** Ver el consumo y el costo; cambiar el proveedor a «ninguno» y comprobar que la interpretación sigue con reglas.
+- **Pruebas (`core/tests/`):** test_rf11_rf21_rf22_sistema, test_rf21_proveedores
+- **Cómo demostrarlo:** Ver el consumo y el costo; cambiar el proveedor a «compatible» (Groq, OpenRouter… gratuitos) o a «ninguno» y comprobar que la interpretación sigue con reglas.
 
 ### RF22 · Módulo Trazabilidad y auditoría
 

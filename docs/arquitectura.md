@@ -121,7 +121,12 @@ Navegador (plantillas + Chart.js)       Cliente móvil futuro
 - Caché de interpretaciones por fragmento normalizado, límite diario por
   usuario, presupuesto mensual con alerta al 80 % y registro de tokens, costo,
   latencia y errores (`UsoIA`).
-- El proveedor es intercambiable: OpenAI o un modelo local con API compatible.
+- El proveedor es intercambiable (`ia_proveedor`): **openai**; **compatible**,
+  cualquier servicio con la API de OpenAI y nivel gratuito (Groq, OpenRouter,
+  Google AI Studio, Cerebras, Mistral…) con su propia clave
+  `IA_COMPATIBLE_API_KEY`; **local** (Ollama, LM Studio), que no recibe
+  ninguna clave; o **ninguno**. Si el modelo no admite el esquema estricto se
+  pide JSON simple y la respuesta pasa por la misma validación.
 
 ## 8. API REST v1
 
