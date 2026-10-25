@@ -18,7 +18,9 @@ Pasos:
 """
 
 import time
+from pathlib import Path
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from core.services import ia
@@ -34,15 +36,33 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--texto", default=TEXTO_POR_DEFECTO)
 
+    @staticmethod
+    def _que_falta(proveedor) -> str:
+        """Dice exactamente qué falta, sin mostrar nunca el valor de una clave."""
+        faltas = []
+        variable = {"openai": "OPENAI_API_KEY", "compatible": "IA_COMPATIBLE_API_KEY"}.get(proveedor.nombre)
+        if variable and not proveedor.clave:
+            archivo = Path(settings.BASE_DIR, ".env")
+            if not archivo.exists():
+                detalle = f"no existe el archivo {archivo}"
+            elif not any(linea.strip().startswith(f"{variable}=") for linea in archivo.read_text(encoding="utf-8", errors="ignore").splitlines()):
+                detalle = f"{archivo} no tiene una línea que empiece por {variable}="
+            else:
+                detalle = f"la línea {variable}= de {archivo} está vacía"
+            faltas.append(f"la clave {variable} ({detalle})")
+        parametros = {"compatible": ("ia_url_compatible", "ia_modelo_compatible"), "local": ("ia_url_local",)}
+        for clave in parametros.get(proveedor.nombre, ()):
+            if not parametro(clave):
+                faltas.append(f"el parámetro {clave} (Administrador → Parámetros)")
+        return "Falta " + " y ".join(faltas) + "."
+
     def handle(self, *args, **opciones):
         proveedor = ia.proveedor_activo()
         self.stdout.write(f"1. Proveedor: {parametro('ia_proveedor')}")
         if proveedor is None:
             raise CommandError("La IA está desactivada (parámetro ia_proveedor = 'ninguno').")
         if not proveedor.disponible:
-            faltante = {"openai": "OPENAI_API_KEY en .env", "compatible": "IA_COMPATIBLE_API_KEY en .env y los parámetros "
-                        "ia_url_compatible e ia_modelo_compatible", "local": "el parámetro ia_url_local"}[proveedor.nombre]
-            raise CommandError(f"Falta {faltante}.")
+            raise CommandError(self._que_falta(proveedor))
         destino = f" en {proveedor.base_url}" if proveedor.base_url else ""
         self.stdout.write(self.style.SUCCESS(f"   Configurado · modelo {proveedor.modelo}{destino}"))
 
