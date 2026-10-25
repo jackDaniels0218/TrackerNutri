@@ -11,8 +11,8 @@ ejecutar las pruebas de exactitud. Es idempotente: se puede ejecutar varias
 veces sin duplicar nada.
 """
 
-from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.core.management.base import BaseCommand, CommandError
+from django.db import connection, transaction
 
 from core.datos.frases import FRASES
 from core.models import FraseReferencia, VersionCatalogo
@@ -24,8 +24,19 @@ from core.services.parametros import sembrar_parametros
 class Command(BaseCommand):
     help = "Carga parámetros, catálogo inicial y frases de referencia; publica la versión 1."
 
-    @transaction.atomic
     def handle(self, *args, **opciones):
+        tablas = connection.introspection.table_names()
+        if "core_parametro" not in tablas:
+            pista = (
+                " Si ya ejecutaste migrate, tu db.sqlite3 es la de una versión anterior del proyecto: "
+                "bórrala (Windows: Remove-Item db.sqlite3) y vuelve a ejecutar migrate."
+                if "django_migrations" in tablas else ""
+            )
+            raise CommandError("La base de datos no tiene las tablas del sistema. Ejecuta: python manage.py migrate." + pista)
+        self._inicializar()
+
+    @transaction.atomic
+    def _inicializar(self):
         creados = sembrar_parametros()
         self.stdout.write(f"Parámetros nuevos: {creados}")
 
