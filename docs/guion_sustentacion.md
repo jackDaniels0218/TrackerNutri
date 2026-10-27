@@ -130,7 +130,7 @@ Entrar como `admin@nutriregional.demo`.
 
 ## 5. Cierre (2 min)
 
-- `python manage.py test`: 178 pruebas en verde, una por grupo de
+- `python manage.py test`: 184 pruebas en verde, una por grupo de
   requerimientos, más la prueba que verifica que cada pantalla del mapa existe
   y abre con su rol.
 - API REST v1 con esquema OpenAPI en `/api/v1/esquema/`, lista para la app

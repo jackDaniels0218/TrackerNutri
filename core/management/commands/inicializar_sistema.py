@@ -15,14 +15,21 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 
 from core.datos.frases import FRASES
-from core.models import FraseReferencia, VersionCatalogo
+from core.models import FraseReferencia, Parametro, VersionCatalogo
 from core.services.catalogo import cargar_catalogo_inicial
 from core.services.curacion import publicar_version
-from core.services.parametros import sembrar_parametros
+from core.services.parametros import limpiar_cache, sembrar_parametros, validar_valor
 
 
 class Command(BaseCommand):
     help = "Carga parámetros, catálogo inicial y frases de referencia; publica la versión 1."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--parametro", action="append", default=[], metavar="CLAVE=VALOR",
+            help="Fija un parámetro del sistema (se puede repetir). Útil en servidores cuya base se "
+                 "recrea en cada arranque, como el plan gratuito de Render.",
+        )
 
     def handle(self, *args, **opciones):
         tablas = connection.introspection.table_names()
@@ -34,6 +41,22 @@ class Command(BaseCommand):
             )
             raise CommandError("La base de datos no tiene las tablas del sistema. Ejecuta: python manage.py migrate." + pista)
         self._inicializar()
+        self._fijar_parametros(opciones["parametro"])
+
+    def _fijar_parametros(self, pares):
+        for par in pares:
+            clave, separador, valor = par.partition("=")
+            parametro = Parametro.objects.filter(clave=clave.strip()).first()
+            if not separador or parametro is None:
+                raise CommandError(f"Parámetro inválido: «{par}». Usa CLAVE=VALOR con una clave existente.")
+            try:
+                validar_valor(parametro.tipo, valor)
+            except ValueError as exc:
+                raise CommandError(f"Valor inválido para {parametro.clave}: {exc}") from exc
+            parametro.valor = valor
+            parametro.save()
+            self.stdout.write(f"Parámetro {parametro.clave} = {valor}")
+        limpiar_cache()
 
     @transaction.atomic
     def _inicializar(self):

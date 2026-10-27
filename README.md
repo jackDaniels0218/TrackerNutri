@@ -98,11 +98,40 @@ python manage.py probar_ia      # comprueba la conexión real (gasta crédito)
 
 ---
 
+## Publicar en Render
+
+El repositorio trae `render.yaml` (Blueprint), `bin/render-build.sh` y
+`bin/render-start.sh`.
+
+1. En <https://dashboard.render.com>: **New → Blueprint**, conecta GitHub y
+   elige este repositorio y la rama del proyecto.
+2. Render lee `render.yaml` y pide dos valores secretos:
+   - `IA_COMPATIBLE_API_KEY`: la clave de Groq (opcional; sin ella la app
+     funciona solo con reglas).
+   - `DEMO_CLAVE`: contraseña de las cuentas demo (vacía = `NutriDemo2026`).
+3. **Apply**. El primer despliegue tarda unos minutos; luego la app queda en
+   `https://<nombre>.onrender.com`.
+4. Abre `https://<nombre>.onrender.com/qr/` para mostrar el **código QR** que
+   abre la aplicación desde el celular, o genera un PNG para las diapositivas:
+   `python manage.py generar_qr --url https://<nombre>.onrender.com`.
+
+Cómo se comporta el plan gratuito:
+
+- **Se duerme** tras 15 minutos sin visitas; la siguiente visita tarda cerca de
+  un minuto en despertarlo. Ábrelo unos minutos antes de presentar.
+- **El disco no es persistente**: en cada arranque la base SQLite se recrea con
+  el catálogo y los datos de demostración, con fechas relativas a ese día. Lo
+  que se registre en vivo se pierde al reiniciar. Para datos permanentes hace
+  falta PostgreSQL (ver `docs/desviaciones.md`).
+- Los parámetros de IA se fijan en cada arranque desde las variables de entorno
+  (`IA_URL_COMPATIBLE` e `IA_MODELO_COMPATIBLE` para cambiar los valores por
+  defecto de Groq y `openai/gpt-oss-20b`).
+
 ## Comandos
 
 | Comando | Para qué |
 |---|---|
-| `python manage.py test` | Las 178 pruebas automatizadas, organizadas por requerimiento |
+| `python manage.py test` | Las 184 pruebas automatizadas, organizadas por requerimiento |
 | `python manage.py inicializar_sistema` | Carga inicial idempotente y publicación de la v1 del catálogo |
 | `python manage.py cargar_demo` | Cuentas y datos de demostración (`--dias 30` para más historial) |
 | `python manage.py procesos ajuste_semanal` | Ajuste semanal de metas (RF16) |
@@ -110,6 +139,7 @@ python manage.py probar_ia      # comprueba la conexión real (gasta crédito)
 | `python manage.py procesos resumen_semanal` | Resumen semanal por correo (RF20) |
 | `python manage.py procesos exactitud` | Conjunto de prueba de exactitud (RF19) |
 | `python manage.py respaldar` | Respaldo de la base en `respaldos/` (RNF34) |
+| `python manage.py generar_qr --url URL` | PNG con el código QR que abre la URL |
 | `python manage.py generar_trazabilidad` | Regenera `docs/trazabilidad_srs.md` y `docs/diccionario_datos.md` |
 | `python manage.py probar_ia` | Prueba real del proveedor de IA |
 

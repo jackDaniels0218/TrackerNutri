@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Abrir en el celular{% endblock %}
+{% block contenido %}
+<section class="tarjeta" style="max-width:520px;margin:24px auto;text-align:center">
+  <h1>Abre NutriRegional en tu celular</h1>
+  <p class="texto-secundario">Escanea el código con la cámara.</p>
+  <div class="qr" role="img" aria-label="Código QR que abre {{ url }}">{{ svg|safe }}</div>
+  <p><strong>{{ url }}</strong></p>
+  <p><a class="boton boton-secundario boton-pequeno" href="{% url 'qr_png' %}" download="nutriregional-qr.png">Descargar PNG</a></p>
+</section>
+{% endblock %}

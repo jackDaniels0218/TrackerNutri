@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
@@ -14,6 +15,7 @@ from core.models import Cuenta, Rol
 from core.requerimientos import NO_FUNCIONALES, REQUERIMIENTOS
 from core.services import cuentas, metas
 from core.services.parametros import parametro
+from core.services.qr import qr_png, qr_svg
 from core.views.utilidades import solo_usuario
 
 
@@ -35,6 +37,18 @@ def politica_datos(request):
 
 def aviso_medico(request):
     return render(request, "publico/aviso_medico.html", {"contacto": parametro("contacto_apoyo")})
+
+
+def qr(request):
+    """Código QR con la dirección desde la que se sirve la aplicación (sirve igual en local y en Render)."""
+    url = request.build_absolute_uri("/")
+    return render(request, "publico/qr.html", {"url": url, "svg": qr_svg(url)})
+
+
+def qr_png_vista(request):
+    respuesta = HttpResponse(qr_png(request.build_absolute_uri("/")), content_type="image/png")
+    respuesta["Content-Disposition"] = 'inline; filename="nutriregional-qr.png"'
+    return respuesta
 
 
 def requerimientos(request):

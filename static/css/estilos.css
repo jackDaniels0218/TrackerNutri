@@ -237,3 +237,7 @@ details.desglose ol, details.desglose ul { font-size: .82rem; color: var(--texto
 /* Acceso discreto a /requerimientos/: el texto toma el color del fondo donde está. */
 a.discreto, a.discreto:hover, a.discreto:focus, a.discreto:visited { color: var(--blanco); background: transparent; text-decoration: none; outline: none; }
 .discreto-fondo, a.discreto-fondo, a.discreto-fondo:hover, a.discreto-fondo:focus, a.discreto-fondo:visited { color: var(--fondo); background: transparent; text-decoration: none; outline: none; }
+
+/* Página /qr/: el código ocupa el ancho disponible y siempre se ve en blanco y negro. */
+.qr { background: #fff; padding: 12px; border-radius: 12px; margin: 8px auto 16px; max-width: 360px; }
+.qr svg { width: 100%; height: auto; display: block; }

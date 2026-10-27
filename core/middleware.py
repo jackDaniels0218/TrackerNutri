@@ -14,7 +14,7 @@ from django.urls import reverse
 
 from core.models import Cuenta, EstadoCuenta, Rol
 
-RUTAS_LIBRES = ("/static/", "/cuentas/", "/legal/", "/registro/", "/requerimientos/", "/admin/")
+RUTAS_LIBRES = ("/static/", "/cuentas/", "/legal/", "/registro/", "/requerimientos/", "/admin/", "/qr")
 
 
 class ControlDeCuentaMiddleware:

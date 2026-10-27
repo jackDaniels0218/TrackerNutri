@@ -1,0 +1,25 @@
+# Despliegue en Render (https://render.com) como Blueprint:
+# Dashboard → New → Blueprint → elegir este repositorio.
+services:
+  - type: web
+    name: nutriregional
+    runtime: python
+    plan: free
+    buildCommand: ./bin/render-build.sh
+    startCommand: ./bin/render-start.sh
+    healthCheckPath: /legal/aviso-medico/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.0"
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      # Clave del servicio de IA gratuito (Groq). Se escribe en el panel de
+      # Render, nunca en este archivo. Sin clave, la app funciona solo con reglas.
+      - key: IA_COMPATIBLE_API_KEY
+        sync: false
+      # Contraseña de las cuentas de demostración. Si se deja vacía se usa
+      # NutriDemo2026, que es pública en el README: cámbiala si el enlace se comparte.
+      - key: DEMO_CLAVE
+        sync: false

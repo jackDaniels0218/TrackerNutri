@@ -14,6 +14,8 @@ urlpatterns = [
     # --- Público y acceso (RF12) -------------------------------------------------
     path("", acceso.inicio, name="inicio"),
     path("requerimientos/", acceso.requerimientos, name="requerimientos"),
+    path("qr/", acceso.qr, name="qr"),
+    path("qr.png", acceso.qr_png_vista, name="qr_png"),
     path("legal/politica-de-datos/", acceso.politica_datos, name="politica_datos"),
     path("legal/aviso-medico/", acceso.aviso_medico, name="aviso_medico"),
     path("cuentas/login/", acceso.IngresoView.as_view(), name="login"),

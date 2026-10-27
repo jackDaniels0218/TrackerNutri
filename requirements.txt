@@ -17,3 +17,11 @@ python-dotenv==1.2.4
 # Genera el esquema OpenAPI de la API (/api/v1/esquema/).
 uritemplate==4.1.1
 inflection==0.5.1
+
+# Producción (Render): servidor WSGI y archivos estáticos sin servidor aparte.
+gunicorn==23.0.0
+whitenoise==6.8.2
+
+# Código QR de la página /qr/ (SVG) y del comando generar_qr (PNG).
+qrcode==8.0
+pypng==0.20220715.0
