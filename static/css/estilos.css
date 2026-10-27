@@ -233,3 +233,7 @@ details.desglose ol, details.desglose ul { font-size: .82rem; color: var(--texto
   .submenu { right: auto; left: 0; }
   .acciones .boton { flex: 1 1 auto; }
 }
+
+/* Acceso discreto a /requerimientos/: el texto toma el color del fondo donde está. */
+a.discreto, a.discreto:hover, a.discreto:focus, a.discreto:visited { color: var(--blanco); background: transparent; text-decoration: none; outline: none; }
+.discreto-fondo, a.discreto-fondo, a.discreto-fondo:hover, a.discreto-fondo:focus, a.discreto-fondo:visited { color: var(--fondo); background: transparent; text-decoration: none; outline: none; }

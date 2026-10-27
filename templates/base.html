@@ -85,7 +85,7 @@
         {% endwith %}
       {% else %}
         <nav class="navegacion" aria-label="Acceso">
-          <a href="{% url 'requerimientos' %}">Requerimientos</a>
+          <a class="discreto" href="{% url 'requerimientos' %}">Requerimientos</a>
           <a href="{% url 'login' %}">Ingresar</a>
           <a href="{% url 'registro' %}" class="boton boton-principal boton-pequeno">Crear cuenta</a>
         </nav>
@@ -108,7 +108,7 @@
   <footer class="pie">
     <div class="contenedor">
       <p><strong>Las cifras son estimaciones.</strong> NutriRegional no es un servicio médico y no reemplaza a un profesional de la salud o de la nutrición.
-        <a href="{% url 'aviso_medico' %}">Aviso</a> · <a href="{% url 'politica_datos' %}">Política de datos</a> · <a href="{% url 'requerimientos' %}">Requerimientos del SRS</a></p>
+        <a href="{% url 'aviso_medico' %}">Aviso</a> · <a href="{% url 'politica_datos' %}">Política de datos</a><a class="discreto" href="{% url 'requerimientos' %}"> · Requerimientos del SRS</a></p>
       <p>Prototipo académico · Universidad de Cundinamarca, Facatativá.</p>
     </div>
   </footer>
