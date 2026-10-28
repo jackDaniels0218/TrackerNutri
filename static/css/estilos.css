@@ -99,6 +99,7 @@ a:focus-visible, button:focus-visible, .campo:focus-visible, summary:focus-visib
 }
 .navegacion > a:hover, .navegacion summary:hover, .boton-enlace:hover { background: var(--amarillo-claro); color: var(--texto); transform: translateY(-1px); }
 .navegacion > a.activo { background: var(--verde); color: #fff; box-shadow: 0 3px 0 var(--verde-oscuro); }
+.navegacion > a.boton-principal, .navegacion > a.boton-principal:hover { background: var(--verde); color: #fff; box-shadow: 0 3px 0 var(--verde-oscuro); }
 .navegacion details { position: relative; }
 .navegacion summary { list-style: none; }
 .navegacion summary::-webkit-details-marker { display: none; }
@@ -235,7 +236,7 @@ textarea.campo { min-height: 100px; resize: vertical; }
   background: var(--verde-claro); font-weight: 900;
 }
 .tabla th:first-child { border-top-left-radius: var(--radio-pequeno); }
-.tabla th:last_child { border-top-right-radius: var(--radio-pequeno); }
+.tabla th:last-child { border-top-right-radius: var(--radio-pequeno); }
 .tabla tbody tr:nth-child(even) td { background: #fffcf6; }
 .tabla tbody tr:hover td { background: var(--amarillo-claro); }
 .tabla .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; }
