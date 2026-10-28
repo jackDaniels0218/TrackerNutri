@@ -29,3 +29,6 @@ respaldos/
 
 # Registro técnico
 nutriregional.log*
+
+# Grafo generado por graphify
+graphify-out/
