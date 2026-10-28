@@ -1,0 +1,14 @@
+{% load nutri %}
+<details class="desglose">
+  <summary>Ver cálculo</summary>
+  {% if item.notas %}<ul>{% for nota in item.notas.splitlines %}<li>{{ nota }}</li>{% endfor %}</ul>{% endif %}
+  <ol>
+    {% for linea in item.detalle_calculo.lineas %}
+      {% if linea.resumen %}<li><strong>{{ linea.resumen }}</strong></li>
+      {% else %}<li>{{ linea.ingrediente }}{% if linea.rol %} ({{ linea.rol|lower }}){% endif %}: {{ linea.gramos_crudos }} g crudos{% if linea.metodo %}, {{ linea.metodo|lower }}{% endif %}{% for p in linea.pasos %}; {{ p }}{% endfor %} → {{ linea.kcal }} kcal
+        {% for a in linea.aceite_detalle %}<br><span class="pequeno">· {{ a }}</span>{% endfor %}</li>{% endif %}
+    {% endfor %}
+  </ol>
+  {% for aviso in item.detalle_calculo.avisos %}<p class="pequeno">⚠ {{ aviso }}</p>{% endfor %}
+  {% if item.destino %}<p class="pequeno">Fuente: {% if item.alimento %}{{ item.alimento.get_fuente_display }}{% if not item.alimento.verificado %} (estimación pendiente de validación){% endif %}{% else %}receta tipo{% if not item.preparacion.verificada %} (pendiente de validación){% endif %}{% endif %} · Motor {{ item.detalle_calculo.version_motor }}</p>{% endif %}
+</details>

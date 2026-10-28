@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Mis correcciones{% endblock %}
+{% block contenido %}
+<h1>Mis correcciones</h1>
+<p class="texto-secundario">Lo que reportaste como equivocado. Las cantidades, métodos y componentes se corrigen de inmediato en tu comida; el equipo de curación decide si el catálogo también cambia.</p>
+<section class="tarjeta">
+{% if correcciones %}
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Fecha</th><th>Tipo</th><th>Original</th><th>Sugerido</th><th>En tu comida</th><th>Estado</th><th>Respuesta</th></tr></thead>
+    <tbody>{% for c in correcciones %}<tr>
+      <td data-titulo="Fecha">{{ c.fecha_reporte|date:"d/m/Y" }}</td><td data-titulo="Tipo">{{ c.get_tipo_display }}</td>
+      <td data-titulo="Original">{{ c.valor_original }}</td><td data-titulo="Sugerido">{{ c.valor_sugerido }}</td>
+      <td data-titulo="En tu comida">{% if c.aplicada_a_comida %}Corregida{% else %}—{% endif %}</td>
+      <td data-titulo="Estado"><span class="etiqueta {% if c.estado == 'rechazada' %}etiqueta-gris{% elif c.estado == 'pendiente' %}etiqueta-alerta{% endif %}">{{ c.get_estado_display }}</span></td>
+      <td data-titulo="Respuesta">{{ c.resolucion|default:"—" }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+{% else %}<div class="vacio">No has reportado errores. Desde el detalle de una comida puedes «Reportar error» en cualquier componente.</div>{% endif %}
+</section>
+{% endblock %}

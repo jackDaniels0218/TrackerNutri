@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Exactitud del catálogo{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>Pruebas de exactitud</h1>
+  <p class="texto-secundario">Conjunto de frases regionales con el resultado esperado. Se ejecuta con el motor de reglas (sin IA) para que sea reproducible y no cueste dinero.</p></div>
+  {% if rol == ROL_CURADOR %}<div class="acciones" style="margin:0"><form method="post" action="{% url 'exactitud_ejecutar' %}">{% csrf_token %}<button class="boton boton-principal" type="submit">Ejecutar ahora</button></form>
+    <a class="boton boton-secundario" href="{% url 'frase_nueva' %}">＋ Frase</a></div>{% endif %}</div>
+<p class="aviso aviso-informativo">El SRS pide 200 frases validadas por un nutricionista. Estas {{ frases|length }} las escribió el equipo: sirven para detectar regresiones, no para medir la exactitud real con usuarios. Se marcan como validadas cuando el nutricionista las revise.</p>
+{% if ultima %}
+<section class="indicadores">
+  <div class="indicador {% if not ultima.aprobada %}indicador-alerta{% endif %}"><div class="etiqueta-ind">Identificación de componentes</div><div class="valor">{{ ultima.identificacion_pct }} <small>% (mín. 85)</small></div></div>
+  <div class="indicador {% if not ultima.aprobada %}indicador-alerta{% endif %}"><div class="etiqueta-ind">Método de cocción</div><div class="valor">{{ ultima.coccion_pct }} <small>% (mín. 90)</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Error medio de energía</div><div class="valor">{% if ultima.error_energia_pct is not None %}{{ ultima.error_energia_pct }} <small>%</small>{% else %}—{% endif %}</div><div class="detalle">Necesita frases con energía de referencia validada.</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Resultado</div><div class="valor" style="font-size:1.2rem">{% if ultima.aprobada %}Aprobada{% else %}No aprobada{% endif %}</div><div class="detalle">{{ ultima.fecha|date:"d/m/Y H:i" }} · {{ ultima.total_frases }} frases</div></div>
+</section>
+<section class="tarjeta"><h2>Detalle de la última ejecución</h2>
+  <ul class="lista-limpia lista-filas">{% for d in ultima.detalle %}{% if not d.ok %}<li><div>✗ {{ d.frase }}<div class="texto-secundario pequeno">{{ d.fallos|join:"; " }}</div></div></li>{% endif %}{% endfor %}</ul>
+  <p class="texto-secundario pequeno">{% if ultima.aprobada %}Todas las frases que no aparecen arriba se interpretaron correctamente.{% endif %}</p></section>
+{% endif %}
+<section class="tarjeta"><h2>Ejecuciones anteriores</h2>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas"><thead><tr><th>Fecha</th><th>Versión</th><th class="num">Identificación</th><th class="num">Método</th><th>Resultado</th></tr></thead>
+  <tbody>{% for e in ejecuciones %}<tr><td data-titulo="Fecha">{{ e.fecha|date:"d/m/Y H:i" }}</td><td data-titulo="Versión">{% if e.version %}v{{ e.version.numero }}{% endif %}</td><td class="num" data-titulo="Identificación">{{ e.identificacion_pct }} %</td><td class="num" data-titulo="Método">{{ e.coccion_pct }} %</td><td data-titulo="Resultado">{{ e.aprobada|yesno:"aprobada,no aprobada" }}</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="tarjeta"><h2>Conjunto de prueba ({{ frases|length }} frases)</h2>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas"><thead><tr><th>Frase</th><th>Esperado</th><th>Origen</th><th>Validada</th><th></th></tr></thead>
+  <tbody>{% for f in frases %}<tr {% if not f.activa %}class="descartado"{% endif %}><td data-titulo="Frase">{{ f.texto }}</td>
+    <td data-titulo="Esperado" class="pequeno">{% for c in f.componentes_esperados %}{{ c.nombre }}{% if c.metodo %} ({{ c.metodo }}){% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}</td>
+    <td data-titulo="Origen">{{ f.get_origen_display }}</td><td data-titulo="Validada">{{ f.validada|yesno:"sí,no" }}</td><td>{% if rol == ROL_CURADOR %}<a href="{% url 'frase_editar' f.pk %}">Editar</a>{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Porciones caseras{% endblock %}
+{% block contenido %}
+<div class="encabezado"><div><h1>Porciones caseras</h1><p class="texto-secundario">Cómo se traduce «un vaso», «una arepa mediana» o «un plato» a gramos o mililitros.</p></div>
+  {% if rol == ROL_CURADOR %}<a class="boton boton-principal" href="{% url 'catalogo_porcion_nueva' %}">＋ Nueva porción</a>{% endif %}</div>
+<form method="get" class="acciones" style="margin-top:0"><input class="campo" style="max-width:320px" name="q" value="{{ q }}" placeholder="Buscar alimento o preparación" aria-label="Buscar"><button class="boton boton-secundario" type="submit">Buscar</button></form>
+<section class="tarjeta">
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Alimento o preparación</th><th>Medida</th><th class="num">Equivale a</th><th>Por defecto</th><th></th></tr></thead>
+    <tbody>{% for p in pagina %}<tr><td data-titulo="Destino">{{ p.alimento|default:p.preparacion }}</td><td data-titulo="Medida">{{ p.get_medida_display }}</td>
+      <td class="num" data-titulo="Equivale">{{ p.cantidad }} {% if p.alimento.densidad or p.preparacion.es_bebida %}ml{% else %}g{% endif %}</td><td data-titulo="Por defecto">{% if p.por_defecto %}✓{% endif %}</td>
+      <td>{% if rol == ROL_CURADOR %}<a href="{% url 'catalogo_porcion_editar' p.pk %}">Editar</a>{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% include "curacion/_paginacion.html" %}
+</section>
+{% endblock %}

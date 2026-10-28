@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titulo %}Una pregunta rápida{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>{% if comida.preguntas|length > 1 %}Dos preguntas rápidas{% else %}Una pregunta rápida{% endif %}</h1>
+  <blockquote class="cita">{{ comida.texto_original }}</blockquote>
+  <form method="post">
+    {% csrf_token %}
+    {% for pregunta in comida.preguntas %}
+      <fieldset style="border:0;padding:0;margin:0 0 18px">
+        <legend class="etiqueta-campo" style="font-size:1rem">{{ pregunta.texto }}</legend>
+        <div class="opciones">
+          {% for opcion in pregunta.opciones %}
+            <label class="opcion"><input type="radio" name="pregunta_{{ pregunta.item }}_{{ pregunta.tipo }}" value="{{ opcion.valor }}" {% if forloop.first %}required{% endif %}><span>{{ opcion.etiqueta }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+    {% endfor %}
+    <div class="acciones">
+      <button type="submit" class="boton boton-principal">Continuar</button>
+      <a class="boton boton-secundario" href="{% url 'comida_confirmar' comida.pk %}">Omitir y revisar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

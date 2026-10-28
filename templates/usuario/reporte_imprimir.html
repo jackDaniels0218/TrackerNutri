@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Informe{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <div class="encabezado no-imprimir"><p class="texto-secundario">Usa «Imprimir» y elige «Guardar como PDF».</p>
+    <button class="boton boton-principal" onclick="window.print()">Imprimir / guardar PDF</button></div>
+  <h1>Informe de los últimos {{ dias }} días</h1>
+  <p class="texto-secundario">{{ user.get_full_name }} · generado el {% now "j \d\e F \d\e Y" %} · NutriRegional</p>
+  {% if vigente %}<p>Meta vigente: <strong>{{ vigente.kcal_dia|cifra:ocultar_cifras|entero }} kcal</strong> ({{ vigente.get_origen_display|lower }}).</p>{% endif %}
+  <table class="tabla">
+    <thead><tr><th>Día</th><th class="num">Energía estimada</th><th class="num">Rango</th><th class="num">Meta</th></tr></thead>
+    <tbody>{% for f in filas %}<tr><td>{{ f.fecha }}</td><td class="num">{{ f.kcal|cifra:ocultar_cifras|entero }} kcal</td><td class="num">{% if not ocultar_cifras %}{{ f.min|entero }}–{{ f.max|entero }}{% else %}—{% endif %}</td><td class="num">{{ f.meta|cifra:ocultar_cifras|entero }}</td></tr>
+    {% empty %}<tr><td colspan="4">Sin registros en el periodo.</td></tr>{% endfor %}</tbody>
+  </table>
+  <p class="texto-secundario pequeno">Todas las cifras son estimaciones. NutriRegional no es un servicio médico.</p>
+</section>
+{% endblock %}

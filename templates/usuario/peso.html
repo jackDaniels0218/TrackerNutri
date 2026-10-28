@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static nutri %}
+{% block titulo %}Peso{% endblock %}
+{% block contenido %}
+<h1>Seguimiento de peso</h1>
+<p class="texto-secundario">El peso cambia de un día a otro por agua y comida: por eso usamos el <strong>peso tendencial</strong> (media móvil de 7 días) para el ajuste de tu meta.</p>
+<div class="rejilla-2">
+  <section class="tarjeta">
+    <h2>Registrar pesaje</h2>
+    <form method="post" class="formulario" novalidate>{% csrf_token %}{% include "generico/_form.html" %}
+      <button class="boton boton-principal" type="submit">Guardar</button></form>
+    <p class="texto-secundario pequeno">Entre 30 y 300 kg. Si el cambio respecto al día anterior supera 3 kg, te avisaremos por si fue un error de digitación.</p>
+  </section>
+  <section class="tarjeta">
+    <h2>Tendencia</h2>
+    {% if ritmo is not None %}<p>Ritmo de la última semana: <strong>{% if ocultar_cifras %}{% if ritmo < 0 %}bajando{% elif ritmo > 0 %}subiendo{% else %}estable{% endif %}{% else %}{{ ritmo }} % por semana{% endif %}</strong></p>{% endif %}
+    {% if series.tiene_datos %}<div class="grafico"><canvas id="grafico-peso" role="img" aria-label="Peso y peso tendencial"></canvas></div>{% else %}<p class="vacio">Registra al menos dos pesajes para ver la tendencia.</p>{% endif %}
+  </section>
+</div>
+<section class="tarjeta">
+  <h2>Tus pesajes</h2>
+  {% if tendencia %}
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Fecha</th><th class="num">Peso</th><th class="num">Tendencial</th><th></th></tr></thead>
+    <tbody>{% for fecha, peso, tendencial in tendencia %}<tr>
+      <td data-titulo="Fecha">{{ fecha|date:"d/m/Y" }}</td><td class="num" data-titulo="Peso">{{ peso|cifra:ocultar_cifras }} kg</td><td class="num" data-titulo="Tendencial">{{ tendencial|cifra:ocultar_cifras }} kg</td>
+      <td>{% for p in pesajes %}{% if p.fecha == fecha %}<a class="pequeno" href="{% url 'peso_editar' p.pk %}">Corregir</a> · <a class="pequeno" href="{% url 'peso_eliminar' p.pk %}">Eliminar</a>{% endif %}{% endfor %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="vacio">Aún no hay pesajes.</div>{% endif %}
+</section>
+{{ series|json_script:"datos-series" }}
+{% endblock %}
+{% block scripts %}{% if series.tiene_datos %}
+<script src="{% static 'js/vendor/chart.umd.js' %}"></script><script src="{% static 'js/graficos.js' %}"></script>
+<script>NutriGraficos.peso("grafico-peso", JSON.parse(document.getElementById("datos-series").textContent), {{ ocultar_cifras|yesno:"true,false" }});</script>
+{% endif %}{% endblock %}

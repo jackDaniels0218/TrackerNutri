@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Versiones del catálogo{% endblock %}
+{% block contenido %}
+<h1>Versiones del catálogo</h1>
+<p class="texto-secundario">Cada conjunto de cambios forma una versión. Al publicar se ejecuta el conjunto de prueba de referencia: si la exactitud baja de los umbrales o empeora frente a la versión anterior, la publicación se bloquea.</p>
+{% if borrador and rol == ROL_CURADOR %}
+<section class="tarjeta">
+  <h2>Borrador v{{ borrador.numero }} · {{ borrador.cambios.count }} cambios</h2>
+  <form method="post" action="{% url 'version_publicar' %}" class="formulario">{% csrf_token %}
+    <div class="campo-grupo"><label for="notas">Notas de la versión</label><textarea class="campo" id="notas" name="notas" rows="2" placeholder="Qué cambió y por qué">{{ borrador.notas }}</textarea></div>
+    <button class="boton boton-principal" type="submit">Ejecutar pruebas y publicar v{{ borrador.numero }}</button></form>
+</section>
+{% endif %}
+<section class="tarjeta">
+  <h2>Versiones</h2>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas"><thead><tr><th>Versión</th><th>Estado</th><th>Creada</th><th>Publicada</th><th>Notas</th></tr></thead>
+    <tbody>{% for v in versiones %}<tr><td data-titulo="Versión"><strong>v{{ v.numero }}</strong></td><td data-titulo="Estado"><span class="etiqueta {% if v.estado != 'publicada' %}etiqueta-gris{% endif %}">{{ v.get_estado_display }}</span></td>
+      <td data-titulo="Creada">{{ v.creada_en|date:"d/m/Y" }}</td><td data-titulo="Publicada">{{ v.publicada_en|date:"d/m/Y H:i"|default:"—" }}</td><td data-titulo="Notas" class="pequeno">{{ v.notas }}</td></tr>{% endfor %}</tbody></table></div>
+</section>
+<section class="tarjeta">
+  <h2>Historial de cambios</h2>
+  <p class="texto-secundario pequeno">Solo inserción: cada cambio guarda el valor anterior y el nuevo. Revertir crea un cambio nuevo, no borra el anterior.</p>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas"><thead><tr><th>Fecha</th><th>Versión</th><th>Cambio</th><th>Quién</th><th></th></tr></thead>
+    <tbody>{% for c in cambios %}<tr><td data-titulo="Fecha">{{ c.fecha|date:"d/m/Y H:i" }}</td><td data-titulo="Versión">v{{ c.version.numero }}</td>
+      <td data-titulo="Cambio">{{ c.descripcion }}{% if c.valor_anterior %}<details class="desglose"><summary>Valores</summary><p class="pequeno">Antes: {{ c.valor_anterior }}</p><p class="pequeno">Después: {{ c.valor_nuevo }}</p></details>{% endif %}</td>
+      <td data-titulo="Quién">{{ c.usuario.email|default:"sistema" }}</td>
+      <td>{% if rol == ROL_CURADOR and not c.revertido and c.version.estado == "borrador" %}<form method="post" action="{% url 'cambio_revertir' c.pk %}">{% csrf_token %}<button class="boton boton-secundario boton-pequeno" type="submit">Revertir</button></form>{% elif c.revertido %}<span class="etiqueta etiqueta-gris">revertido</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="vacio">Aún no hay cambios registrados.</td></tr>{% endfor %}</tbody></table></div>
+</section>
+{% endblock %}

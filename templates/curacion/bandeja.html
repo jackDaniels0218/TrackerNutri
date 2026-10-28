@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}Bandeja de curación{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div><h1>Bandeja de pendientes</h1>
+    <p class="texto-secundario">Catálogo publicado: {% if publicada %}v{{ publicada.numero }}{% else %}ninguno{% endif %} · Borrador en curso: v{{ version.numero }} ({{ version.cambios.count }} cambios) · Sin verificar: {{ sin_verificar }} alimentos y {{ preparaciones_sin_verificar }} preparaciones</p></div>
+  <a class="boton boton-principal" href="{% url 'versiones' %}">Revisar y publicar v{{ version.numero }}</a>
+</div>
+<section class="tarjeta">
+  <h2>Términos no reconocidos <span class="etiqueta etiqueta-alerta">{{ terminos.count }}</span></h2>
+  <p class="texto-secundario pequeno">Lo que los usuarios escribieron y el léxico no reconoció, ordenado por frecuencia. Solo se guarda el término, nunca quién lo escribió.</p>
+  {% if terminos %}<div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Término</th><th class="num">Veces</th><th>Última vez</th><th>Incorporar al léxico</th><th></th></tr></thead>
+    <tbody>{% for t in terminos %}<tr>
+      <td data-titulo="Término"><strong>{{ t.termino }}</strong></td><td class="num" data-titulo="Veces">{{ t.veces }}</td><td data-titulo="Última vez">{{ t.ultima_vez|date:"d/m/Y" }}</td>
+      <td data-titulo="Incorporar"><form method="post" action="{% url 'termino_resolver' t.pk %}" style="display:flex;gap:6px">{% csrf_token %}
+        <input class="campo" name="destino" list="destinos" placeholder="Corresponde a…" required aria-label="Alimento o preparación">
+        <button class="boton boton-principal boton-pequeno" type="submit">Agregar</button></form></td>
+      <td><form method="post" action="{% url 'termino_descartar' t.pk %}">{% csrf_token %}<button class="boton boton-secundario boton-pequeno" type="submit">Descartar</button></form></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="texto-secundario pequeno">¿No existe todavía el alimento? <a href="{% url 'catalogo_alimento_nuevo' %}">Créalo primero</a> y luego vincula el término.</p>
+  {% else %}<div class="vacio">No hay términos pendientes.</div>{% endif %}
+</section>
+<section class="tarjeta">
+  <h2>Alimentos personales por revisar <span class="etiqueta etiqueta-alerta">{{ alimentos_personales.count }}</span></h2>
+  {% if alimentos_personales %}<div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+    <thead><tr><th>Nombre</th><th>Categoría</th><th class="num">kcal</th><th class="num">P / C / G</th><th>Fuente</th><th></th></tr></thead>
+    <tbody>{% for a in alimentos_personales %}<tr>
+      <td data-titulo="Nombre">{{ a.nombre }}</td><td data-titulo="Categoría">{{ a.categoria }}</td><td class="num" data-titulo="kcal">{{ a.kcal }}</td>
+      <td class="num" data-titulo="P/C/G">{{ a.proteinas }} / {{ a.carbohidratos }} / {{ a.grasas }}</td><td data-titulo="Fuente">{{ a.fuente_detalle|default:a.get_fuente_display }}</td>
+      <td><form method="post" action="{% url 'personal_revisar' a.pk %}" style="display:flex;gap:6px">{% csrf_token %}
+        <button class="boton boton-principal boton-pequeno" name="decision" value="aprobar">Incorporar</button>
+        <button class="boton boton-secundario boton-pequeno" name="decision" value="rechazar">Dejar solo personal</button></form></td></tr>{% endfor %}</tbody>
+  </table></div>{% else %}<div class="vacio">No hay alimentos personales pendientes.</div>{% endif %}
+</section>
+<section class="tarjeta">
+  <h2>Correcciones de usuarios <span class="etiqueta etiqueta-alerta">{{ correcciones.count }}</span></h2>
+  {% if correcciones %}<ul class="lista-limpia lista-filas">{% for c in correcciones %}
+    <li><div><strong>{{ c.get_tipo_display }}</strong> en «{{ c.item.nombre_mostrado|default:"(componente eliminado)" }}»: {{ c.valor_original }} → {{ c.valor_sugerido }}
+      {% if c.comentario %}<div class="texto-secundario pequeno">«{{ c.comentario }}»</div>{% endif %}
+      <div class="texto-secundario pequeno">{{ c.fecha_reporte|date:"d/m/Y" }}{% if c.aplicada_a_comida %} · ya aplicada a la comida del usuario{% endif %}</div></div>
+      <a class="boton boton-secundario boton-pequeno" href="{% url 'correccion_revisar' c.pk %}">Revisar</a></li>{% endfor %}</ul>
+  {% else %}<div class="vacio">No hay correcciones pendientes.</div>{% endif %}
+</section>
+<datalist id="destinos">{% for d in destinos %}<option value="{{ d }}">{% endfor %}</datalist>
+{% endblock %}

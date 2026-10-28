@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  {% include "registro/_pasos.html" %}
+  <h1>{{ titulo }}</h1>
+  {% if paso == 1 %}
+    <p class="texto-secundario">NutriRegional es para personas mayores de 18 años. Revisa la <a href="{% url 'politica_datos' %}" target="_blank">política de tratamiento de datos</a>.</p>
+  {% else %}
+    <p class="texto-secundario">Usamos estos datos solo para calcular tu meta. Puedes guardar y continuar después: tu avance queda registrado.</p>
+  {% endif %}
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% if paso == 1 %}
+      {% for campo in form %}{% if campo.name in "nombres apellidos correo password1 password2" %}{% include "generico/_campo.html" %}{% endif %}{% endfor %}
+      <fieldset class="tarjeta" style="padding:12px;margin:12px 0">
+        <legend class="etiqueta-campo">Autorización obligatoria</legend>
+        {% with campo=form.acepta_datos %}{% include "generico/_campo.html" %}{% endwith %}
+      </fieldset>
+      <fieldset class="tarjeta" style="padding:12px;margin:12px 0">
+        <legend class="etiqueta-campo">Autorización opcional y separada</legend>
+        {% with campo=form.acepta_ia %}{% include "generico/_campo.html" %}{% endwith %}
+        <p class="ayuda">Si no la das, la app interpreta tus comidas solo con su léxico y reglas propias.</p>
+      </fieldset>
+      {% with campo=form.entiende_aviso %}{% include "generico/_campo.html" %}{% endwith %}
+    {% else %}
+      {% include "generico/_form.html" %}
+    {% endif %}
+    <div class="acciones">
+      <button type="submit" class="boton boton-principal">{% if paso == 1 %}Crear cuenta y continuar{% else %}Guardar y ver mi meta{% endif %}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

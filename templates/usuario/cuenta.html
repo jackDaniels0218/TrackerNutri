@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Mi cuenta{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>Mi cuenta</h1>
+  <p class="texto-secundario">Rol: {{ cuenta_usuario.get_rol_display }} · Estado: {{ cuenta_usuario.get_estado_display }} · Registrada el {{ user.date_joined|date:"d/m/Y" }}{% if user.last_login %} · Último acceso {{ user.last_login|date:"d/m/Y H:i" }}{% endif %}</p>
+  <form method="post" class="formulario" novalidate>{% csrf_token %}{% include "generico/_form.html" %}
+    <button class="boton boton-principal" type="submit">Guardar</button></form>
+  <hr class="separador">
+  <div class="acciones">
+    <a class="boton boton-secundario" href="{% url 'password_change' %}">Cambiar contraseña</a>
+  </div>
+  {% if cuenta_usuario.es_interna %}<p class="texto-secundario pequeno">Las cuentas de Curador y Administrador no se eliminan: el Administrador las desactiva.</p>{% endif %}
+</section>
+{% endblock %}

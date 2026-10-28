@@ -1,68 +1,51 @@
 /*
-  Pequeñas ayudas de los formularios.
-
-  Dos cosas, nada más:
-  1. Mostrar "Analizando…" mientras el servidor habla con la IA, para que el
-     usuario sepa que la espera es normal.
-  2. Añadir filas de alimentos en el registro manual, clonando la última fila
-     y actualizando los índices que exige el formset de Django.
-
-  Si JavaScript está desactivado, los formularios siguen funcionando: el
-  análisis se envía igual y el formset ya trae una fila lista.
+  Ayudas de formulario. Todo funciona igual sin JavaScript; esto solo mejora
+  la experiencia:
+  1. Contador de caracteres y estado «Interpretando…» del texto libre.
+  2. Botón «Otro alimento» del registro manual: clona la última fila del
+     formset de Django y actualiza sus índices.
 */
-
 (function () {
   "use strict";
 
-  // --- 1. Estado de carga al analizar con IA -------------------------------
-  var formularioAnalisis = document.getElementById("formulario-analisis");
-  if (formularioAnalisis) {
-    formularioAnalisis.addEventListener("submit", function () {
+  var formulario = document.getElementById("formulario-analisis");
+  if (formulario) {
+    var texto = formulario.querySelector("textarea");
+    var contador = document.getElementById("contador");
+    var actualizar = function () {
+      if (contador && texto) contador.textContent = texto.value.length + " / 500 caracteres";
+    };
+    if (texto) { texto.addEventListener("input", actualizar); actualizar(); }
+    formulario.addEventListener("submit", function () {
       var boton = document.getElementById("boton-analizar");
-      var indicador = document.getElementById("indicador-carga");
-      if (boton) {
-        boton.disabled = true;
-        boton.textContent = "Analizando…";
-      }
-      if (indicador) indicador.classList.remove("oculto");
+      if (boton) { boton.disabled = true; boton.textContent = "Interpretando…"; }
     });
   }
 
-  // --- 2. Añadir filas en el registro manual -------------------------------
-  var botonAgregar = document.getElementById("boton-agregar-fila");
-  var cuerpoTabla = document.getElementById("cuerpo-alimentos");
-  if (!botonAgregar || !cuerpoTabla) return;
-
-  // Django lleva la cuenta de las filas en este campo oculto.
-  var totalFormularios = document.querySelector("#id_form-TOTAL_FORMS");
-  if (!totalFormularios) return;
-
-  botonAgregar.addEventListener("click", function () {
-    var filas = cuerpoTabla.querySelectorAll("tr.fila-alimento");
-    if (!filas.length) return;
-
-    var indiceNuevo = parseInt(totalFormularios.value, 10);
-    var copia = filas[filas.length - 1].cloneNode(true);
-
-    // Renumera name/id de "form-0-campo" a "form-N-campo" y limpia valores.
-    copia.querySelectorAll("input, select").forEach(function (campo) {
-      if (campo.name) {
-        campo.name = campo.name.replace(/form-\d+-/, "form-" + indiceNuevo + "-");
-      }
-      if (campo.id) {
-        campo.id = campo.id.replace(/form-\d+-/, "form-" + indiceNuevo + "-");
-      }
-      if (campo.type === "checkbox") {
-        campo.checked = false;
-      } else if (campo.tagName === "SELECT") {
-        campo.selectedIndex = 0;
-      } else {
-        campo.value = "";
-      }
+  var agregar = document.getElementById("agregar-fila");
+  var contenedor = document.getElementById("filas");
+  if (agregar && contenedor) {
+    var prefijo = contenedor.dataset.prefijo;
+    var total = document.getElementById("id_" + prefijo + "-TOTAL_FORMS");
+    agregar.addEventListener("click", function () {
+      var filas = contenedor.querySelectorAll(".fila-formset");
+      if (!filas.length || !total) return;
+      var indice = parseInt(total.value, 10);
+      var copia = filas[filas.length - 1].cloneNode(true);
+      var patron = new RegExp(prefijo + "-\\d+-", "g");
+      copia.querySelectorAll("input, select, label").forEach(function (el) {
+        ["name", "id", "for"].forEach(function (attr) {
+          if (el.getAttribute(attr)) el.setAttribute(attr, el.getAttribute(attr).replace(patron, prefijo + "-" + indice + "-"));
+        });
+        if (el.tagName === "INPUT" && el.type !== "checkbox") el.value = "";
+        if (el.type === "checkbox") el.checked = false;
+        if (el.tagName === "SELECT") el.selectedIndex = 0;
+      });
+      copia.querySelectorAll(".error").forEach(function (e) { e.remove(); });
+      contenedor.appendChild(copia);
+      total.value = indice + 1;
+      var primero = copia.querySelector("input");
+      if (primero) primero.focus();
     });
-    copia.querySelectorAll("small.error").forEach(function (e) { e.remove(); });
-
-    cuerpoTabla.appendChild(copia);
-    totalFormularios.value = indiceNuevo + 1;
-  });
+  }
 })();

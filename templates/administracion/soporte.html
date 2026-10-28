@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Soporte{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <h1>Soporte: {{ usuario_soporte.email }}</h1>
+  <p class="aviso aviso-informativo">Acceso autorizado por el titular hasta el {{ cuenta.autoriza_soporte_hasta|date:"d/m/Y H:i" }}. Este acceso quedó registrado en la bitácora.</p>
+  <p>Meta vigente: {% if meta %}{{ meta.kcal_dia|entero }} kcal ({{ meta.get_origen_display }}){% else %}—{% endif %}</p>
+  <h2>Últimas comidas</h2>
+  <ul>{% for c in comidas %}<li>{{ c.fecha_hora|date:"d/m H:i" }} · {{ c.get_tipo_display }} · {{ c.kcal|entero }} kcal · {{ c.get_estado_display }}</li>{% empty %}<li>Sin comidas.</li>{% endfor %}</ul>
+  <h2>Últimos pesajes</h2>
+  <ul>{% for p in pesajes %}<li>{{ p.fecha|date:"d/m/Y" }} · {{ p.peso_kg }} kg</li>{% empty %}<li>Sin pesajes.</li>{% endfor %}</ul>
+  <a class="boton boton-secundario" href="{% url 'cuentas_admin' %}">Volver</a>
+</section>
+{% endblock %}

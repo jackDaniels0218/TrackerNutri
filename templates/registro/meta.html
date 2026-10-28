@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Tu meta inicial{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  {% include "registro/_pasos.html" %}
+  <h1>Tu meta inicial</h1>
+  {% if meta.solo_informativa %}
+    <p class="aviso aviso-cuidado">Por lo que nos contaste, no te propondremos un déficit calórico. Puedes usar la app para registrar y seguir tu alimentación de forma informativa. Te recomendamos consultar a un profesional.</p>
+  {% endif %}
+  <div class="indicadores">
+    <div class="indicador"><div class="etiqueta-ind">Meta diaria</div><div class="valor">{{ meta.kcal_dia|cifra:ocultar_cifras|entero }} <small>kcal</small></div></div>
+    <div class="indicador"><div class="etiqueta-ind">Proteínas</div><div class="valor">{{ meta.proteinas_g|entero }} <small>g</small></div></div>
+    <div class="indicador"><div class="etiqueta-ind">Carbohidratos</div><div class="valor">{{ meta.carbohidratos_g|entero }} <small>g</small></div></div>
+    <div class="indicador"><div class="etiqueta-ind">Grasas</div><div class="valor">{{ meta.grasas_g|entero }} <small>g</small></div></div>
+  </div>
+  <h2>Así la calculamos</h2>
+  <ol>{% for paso_calculo in meta.explicacion.pasos %}<li>{{ paso_calculo }}</li>{% endfor %}</ol>
+  <p class="texto-secundario">Cada semana, si registras tus comidas y tu peso, revisaremos tu meta con lo que realmente pasa en tu cuerpo. Nunca bajará de un mínimo seguro y siempre podrás revertir un ajuste.</p>
+  <form method="post">{% csrf_token %}
+    <div class="acciones"><button type="submit" class="boton boton-principal">Empezar</button>
+      <a class="boton boton-secundario" href="{% url 'registro_perfil' %}">Volver al perfil</a></div>
+  </form>
+</section>
+{% endblock %}

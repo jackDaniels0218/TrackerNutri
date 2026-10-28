@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load l10n static nutri %}
+{% block titulo %}{% if comida.estado == "interpretada" %}Revisa y confirma{% else %}Editar comida{% endif %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <div class="encabezado">
+    <div>
+      <h1>{% if comida.estado == "interpretada" %}Revisa y confirma{% else %}Editar comida{% endif %}</h1>
+      {% if comida.estado == "interpretada" %}<p class="texto-secundario"><strong>Todavía no se ha guardado nada.</strong> Corrige lo que no coincida y confirma.</p>{% endif %}
+    </div>
+    <div style="text-align:right">
+      <div class="valor" style="font-size:1.6rem;font-weight:750">{{ comida.kcal|cifra:ocultar_cifras|entero }} kcal</div>
+      {% if not ocultar_cifras %}<div class="texto-secundario pequeno">rango {{ comida.kcal_min|entero }}–{{ comida.kcal_max|entero }} kcal</div>{% endif %}
+      <span class="etiqueta confianza-{{ comida.confianza|confianza }}">confianza {{ comida.confianza|confianza }} ({{ comida.confianza|porcentaje }})</span>
+    </div>
+  </div>
+  {% if comida.texto_original %}<blockquote class="cita">{{ comida.texto_original }}</blockquote>{% endif %}
+  <p class="texto-secundario pequeno">Interpretado con: {{ comida.get_motor_display }} · catálogo v{{ comida.version_catalogo|default:"—" }} · motor {{ comida.version_motor }}{% if comida.version_plantilla_ia %} · plantilla IA {{ comida.version_plantilla_ia }}{% endif %}</p>
+
+  <form method="post" id="form-items" novalidate>
+    {% csrf_token %}
+    <div class="tabla-responsiva">
+      <table class="tabla tabla-tarjetas">
+        <thead><tr><th>Componente</th><th>Cantidad (g)</th><th>Preparación</th><th class="num">Energía</th><th>Confianza</th><th>Quitar</th></tr></thead>
+        <tbody>
+        {% for item in items %}
+          <tr class="{% if item.descartado %}descartado{% elif item.pendiente %}pendiente{% endif %}">
+            <td data-titulo="Componente">
+              <input class="campo" name="item-{{ item.pk }}-destino" value="{{ item.nombre_mostrado }}" list="catalogo" aria-label="Componente">
+              {% if item.fragmento_texto %}<div class="texto-secundario pequeno">«{{ item.fragmento_texto }}»</div>{% endif %}
+              {% if item.pendiente %}<div class="pequeno" style="color:var(--amarillo-texto)">No reconocido: elige un alimento del catálogo, <a href="{% url 'mi_alimento_nuevo' %}" target="_blank">créalo como personal</a> o quítalo.</div>{% endif %}
+              <div>{% if item.editado %}<span class="etiqueta etiqueta-azul">editado por ti</span>{% endif %}
+                {% if item.origen_dato == "similitud" %}<span class="etiqueta etiqueta-alerta">estimado por similitud</span>{% elif item.origen_dato == "ia" %}<span class="etiqueta etiqueta-gris">identificado con IA</span>{% endif %}
+                {% if item.estimado %}<span class="etiqueta etiqueta-gris">estimación</span>{% endif %}</div>
+              {% if item.tiene_valores %}{% include "usuario/_item_detalle.html" %}{% endif %}
+            </td>
+            <td data-titulo="Cantidad (g)">
+              <input class="campo" type="number" step="0.1" min="0.1" name="item-{{ item.pk }}-cantidad" value="{{ item.cantidad_g|default_if_none:''|unlocalize }}" aria-label="Gramos">
+              {% if item.unidad_original and item.fuente_cantidad != "gramos" %}<div class="texto-secundario pequeno">{{ item.cantidad_original|default:""|floatformat:"-1" }} {{ item.unidad_original }}{% if item.fuente_cantidad == "defecto" %} (por defecto){% endif %}</div>{% endif %}
+            </td>
+            <td data-titulo="Preparación">
+              <select class="campo" name="item-{{ item.pk }}-metodo" aria-label="Preparación">
+                <option value="">—</option>
+                {% for m in metodos %}<option value="{{ m.pk }}" {% if item.metodo_id == m.pk %}selected{% endif %}>{{ m.nombre }}</option>{% endfor %}
+              </select>
+              {% if item.aceite_g %}<div class="texto-secundario pequeno">aceite estimado {{ item.aceite_g }} g ({{ item.aceite_min_g }}–{{ item.aceite_max_g }})</div>{% endif %}
+            </td>
+            <td class="num" data-titulo="Energía">{% if item.tiene_valores %}<strong>{{ item.kcal|cifra:ocultar_cifras|entero }}</strong> kcal{% if not ocultar_cifras %}<div class="texto-secundario pequeno">{{ item.kcal_min|entero }}–{{ item.kcal_max|entero }}</div>{% endif %}{% else %}—{% endif %}</td>
+            <td data-titulo="Confianza">{% if not item.pendiente %}<span class="etiqueta confianza-{{ item.confianza|confianza }}">{{ item.confianza|confianza }}</span>{% endif %}</td>
+            <td data-titulo="Quitar"><input type="checkbox" name="item-{{ item.pk }}-descartar" {% if item.descartado %}checked{% endif %} aria-label="Quitar componente" style="width:22px;height:22px"></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="acciones">
+      {% if comida.estado == "interpretada" %}
+        <button type="submit" name="accion" value="confirmar" class="boton boton-principal">Confirmar y guardar</button>
+      {% else %}
+        <button type="submit" name="accion" value="guardar" class="boton boton-principal">Guardar cambios</button>
+      {% endif %}
+      <button type="submit" name="accion" value="recalcular" class="boton boton-secundario">Recalcular</button>
+      {% if comida.estado == "interpretada" %}<button type="submit" name="accion" value="descartar_comida" class="boton boton-secundario" formnovalidate>Descartar</button>{% endif %}
+    </div>
+  </form>
+</section>
+<section class="tarjeta">
+  <h2>¿Falta algo?</h2>
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}<input type="hidden" name="accion" value="agregar">
+    <div class="campos-fila">{% for campo in agregar %}{% include "generico/_campo.html" %}{% endfor %}</div>
+    <button type="submit" class="boton boton-secundario">Agregar</button>
+  </form>
+</section>
+<datalist id="catalogo">{% for nombre in catalogo %}<option value="{{ nombre }}">{% endfor %}</datalist>
+{% endblock %}

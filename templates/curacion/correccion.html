@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Revisar corrección{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta-estrecha">
+  <h1>Revisar corrección</h1>
+  <p><strong>{{ correccion.get_tipo_display }}</strong> en «{{ correccion.item.nombre_mostrado|default:"(componente eliminado)" }}»</p>
+  <p>Valor original: {{ correccion.valor_original }}<br>Valor sugerido: <strong>{{ correccion.valor_sugerido }}</strong></p>
+  {% if correccion.comentario %}<blockquote class="cita">{{ correccion.comentario }}</blockquote>{% endif %}
+  {% if correccion.item %}{% with item=correccion.item %}<p class="texto-secundario pequeno">Estimación del sistema: {{ item.cantidad_g }} g, {{ item.metodo|default:"sin método" }}, {{ item.kcal }} kcal (confianza {{ item.confianza }}).</p>{% endwith %}{% endif %}
+  <p class="texto-secundario pequeno">Aceptarla no modifica el catálogo por sí sola: si hace falta, edita el alimento o la preparación (queda en el borrador). Las aceptadas se suman al conjunto de prueba como frases pendientes de validar.</p>
+  <form method="post" class="formulario">{% csrf_token %}
+    <div class="opciones">{% for opcion in form.decision %}<label class="opcion">{{ opcion.tag }}<span>{{ opcion.choice_label }}</span></label>{% endfor %}</div>
+    {% with campo=form.resolucion %}{% include "generico/_campo.html" %}{% endwith %}
+    <div class="acciones"><button class="boton boton-principal" type="submit">Guardar decisión</button><a class="boton boton-secundario" href="{% url 'curacion' %}">Volver</a></div>
+  </form>
+</section>
+{% endblock %}

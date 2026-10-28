@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Privacidad y cuidado{% endblock %}
+{% block contenido %}
+<h1>Privacidad y cuidado</h1>
+<div class="rejilla-2">
+  <section class="tarjeta">
+    <h2>Autorizaciones</h2>
+    <p><strong>Tratamiento de datos:</strong> {% if cuenta_usuario.acepta_datos %}otorgada el {{ cuenta_usuario.fecha_acepta_datos|date:"d/m/Y" }}{% else %}no otorgada{% endif %}. Es necesaria para usar el servicio; si quieres retirarla, elimina tu cuenta.</p>
+    <p><strong>Envío del texto de tus comidas a IA externa:</strong> {% if cuenta_usuario.acepta_ia %}otorgada{% else %}no otorgada: se usan solo las reglas del sistema{% endif %}.</p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="accion" value="ia">
+      <button class="boton boton-secundario" type="submit">{% if cuenta_usuario.acepta_ia %}Retirar autorización de IA{% else %}Autorizar IA externa{% endif %}</button></form>
+    <details class="desglose" style="margin-top:10px"><summary>Historial de autorizaciones</summary>
+      <ul>{% for c in consentimientos %}<li>{{ c.fecha|date:"d/m/Y H:i" }} · {{ c.get_tipo_display }}: {% if c.otorgado %}otorgada{% else %}no otorgada / retirada{% endif %} (texto v{{ c.version_texto }})</li>{% endfor %}</ul></details>
+  </section>
+  <section class="tarjeta">
+    <h2>Cuidado</h2>
+    <form method="post">{% csrf_token %}<input type="hidden" name="accion" value="ocultar">
+      <p>{% if perfil_usuario.ocultar_cifras %}Las cifras de peso y calorías están <strong>ocultas</strong>: verás solo tendencias.{% else %}Puedes ocultar las cifras de peso y calorías y ver solo tendencias.{% endif %}</p>
+      <button class="boton boton-secundario" type="submit">{% if perfil_usuario.ocultar_cifras %}Mostrar cifras{% else %}Ocultar cifras{% endif %}</button></form>
+    <form method="post" style="margin-top:12px">{% csrf_token %}<input type="hidden" name="accion" value="pausa">
+      <p>{% if cuenta_usuario.seguimiento_pausado %}Tu seguimiento está <strong>en pausa</strong>.{% else %}Puedes pausar el seguimiento: sin ajustes de meta ni recordatorios.{% endif %}</p>
+      <button class="boton boton-secundario" type="submit">{% if cuenta_usuario.seguimiento_pausado %}Reanudar seguimiento{% else %}Pausar seguimiento{% endif %}</button></form>
+    <p class="aviso aviso-cuidado" style="margin-top:12px">{{ contacto }}</p>
+  </section>
+  <section class="tarjeta">
+    <h2>Tus datos</h2>
+    <p>Descarga todo lo que guardamos de ti, o solo tus comidas y pesajes.</p>
+    <div class="acciones"><a class="boton boton-secundario" href="{% url 'exportar_datos' %}">Exportar todo (JSON)</a>
+      <a class="boton boton-secundario" href="{% url 'reporte_csv' %}">Comidas y pesajes (CSV)</a></div>
+  </section>
+  <section class="tarjeta">
+    <h2>Soporte</h2>
+    <p>{% if cuenta_usuario.soporte_autorizado %}El equipo de soporte puede ver tus datos hasta el {{ cuenta_usuario.autoriza_soporte_hasta|date:"d/m H:i" }}. Cada acceso queda registrado.{% else %}Nadie del equipo puede ver tus datos individuales. Si necesitas ayuda, puedes autorizar el acceso por 24 horas.{% endif %}</p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="accion" value="soporte">
+      <button class="boton boton-secundario" type="submit">{% if cuenta_usuario.soporte_autorizado %}Retirar acceso de soporte{% else %}Autorizar soporte 24 horas{% endif %}</button></form>
+  </section>
+</div>
+<section class="tarjeta">
+  <h2>Eliminar cuenta</h2>
+  <p>Se borran tus datos personales y de salud (perfil, comidas, pesajes, metas). Solo se conservan registros anónimos. No se puede deshacer.</p>
+  <a class="boton boton-peligro" href="{% url 'eliminar_cuenta' %}">Eliminar mi cuenta</a>
+</section>
+{% endblock %}

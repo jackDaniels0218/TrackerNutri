@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Indicadores{% endblock %}
+{% block contenido %}
+<h1>Indicadores agregados</h1>
+<p class="texto-secundario">Datos agregados y anónimos: ningún indicador permite identificar a una persona ni ver sus comidas.</p>
+<section class="indicadores">
+  {% for rol_nombre, n in panel.usuarios_por_rol.items %}<div class="indicador"><div class="etiqueta-ind">{{ rol_nombre }}</div><div class="valor">{{ n }}</div></div>{% endfor %}
+  <div class="indicador"><div class="etiqueta-ind">Comidas registradas</div><div class="valor">{{ panel.comidas }}</div><div class="detalle">{{ panel.comidas_texto }} por texto libre</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Resueltas sin IA externa</div><div class="valor">{{ panel.sin_ia_pct|default:"—" }} <small>%</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Componentes editados</div><div class="valor">{{ panel.corregidos_pct|default:"—" }} <small>%</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Tasa de corrección</div><div class="valor">{{ panel.tasa_correccion_pct|default:"—" }} <small>%</small></div><div class="detalle">{{ panel.correcciones }} reportes</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Ítems estimados</div><div class="valor">{{ panel.estimados_pct|default:"—" }} <small>%</small></div></div>
+  <div class="indicador"><div class="etiqueta-ind">Confianza media</div><div class="valor">{{ panel.confianza_media|porcentaje|default:"—" }}</div></div>
+  <div class="indicador"><div class="etiqueta-ind">Exactitud (última)</div><div class="valor">{% if panel.ultima_exactitud %}{{ panel.ultima_exactitud.identificacion_pct }} <small>%</small>{% else %}—{% endif %}</div></div>
+</section>
+<section class="tarjeta"><h2>Términos no reconocidos más frecuentes</h2>
+  <ul class="lista-limpia lista-filas">{% for t in panel.terminos_pendientes %}<li><span>{{ t.termino }}</span><span class="etiqueta etiqueta-alerta">{{ t.veces }}</span></li>{% empty %}<li class="vacio">Ninguno.</li>{% endfor %}</ul></section>
+{% endblock %}

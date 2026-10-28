@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}Favoritas{% endblock %}
+{% block contenido %}
+<h1>Comidas favoritas</h1>
+<p class="texto-secundario">Regístralas de nuevo con un toque. Se recalculan con el catálogo vigente.</p>
+{% for comida in favoritas %}
+  <section class="tarjeta">
+    <div class="encabezado" style="margin:0">
+      <div><h2 style="margin:0">{{ comida.nombre_favorita }}</h2>
+        <p class="texto-secundario pequeno">{% for i in comida.items.all %}{% if not i.descartado %}{{ i.nombre_mostrado }} ({{ i.cantidad_g|entero }} g){% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}</p></div>
+      <form method="post" action="{% url 'favorita_repetir' comida.pk %}">{% csrf_token %}<input type="hidden" name="clave" value="{{ clave }}">
+        <button class="boton boton-principal" type="submit">Registrar hoy ({{ comida.kcal|cifra:ocultar_cifras|entero }} kcal)</button></form>
+    </div>
+  </section>
+{% empty %}
+  <section class="tarjeta vacio"><p>Aún no tienes favoritas. Abre una comida del historial y pulsa «Guardar como favorita».</p></section>
+{% endfor %}
+{% endblock %}

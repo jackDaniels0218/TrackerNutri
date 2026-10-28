@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load nutri %}
+{% block titulo %}{{ comida.get_tipo_display }} {{ comida.fecha|date:"d/m" }}{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <div class="encabezado">
+    <div>
+      <h1>{{ comida.get_tipo_display }} · {{ comida.fecha_hora|date:"j \d\e F, H:i" }}</h1>
+      <p class="texto-secundario">{{ comida.get_origen_display }} · {{ comida.get_estado_display }} · {{ comida.get_motor_display }} · catálogo v{{ comida.version_catalogo|default:"—" }} · motor {{ comida.version_motor }}</p>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:1.6rem;font-weight:750">{{ comida.kcal|cifra:ocultar_cifras|entero }} kcal</div>
+      {% if not ocultar_cifras %}<div class="texto-secundario pequeno">entre {{ comida.kcal_min|entero }} y {{ comida.kcal_max|entero }} kcal</div>{% endif %}
+      <span class="etiqueta confianza-{{ comida.confianza|confianza }}">confianza {{ comida.confianza|confianza }} ({{ comida.confianza|porcentaje }})</span>
+    </div>
+  </div>
+  {% if comida.texto_original %}<blockquote class="cita">{{ comida.texto_original }}</blockquote>{% endif %}
+  <div class="tabla-responsiva">
+    <table class="tabla tabla-tarjetas">
+      <thead><tr><th>Componente</th><th class="num">Cantidad</th><th>Preparación</th><th class="num">kcal</th><th class="num">Prot.</th><th class="num">Carb.</th><th class="num">Azúc.</th><th class="num">Grasa</th><th></th></tr></thead>
+      <tbody>
+      {% for item in items %}{% if not item.descartado %}
+        <tr>
+          <td data-titulo="Componente"><strong>{{ item.nombre_mostrado }}</strong>
+            <div>{% if item.editado %}<span class="etiqueta etiqueta-azul">editado por ti</span>{% endif %}
+              {% if item.origen_dato == "similitud" %}<span class="etiqueta etiqueta-alerta">estimado por similitud</span>{% elif item.origen_dato == "ia" %}<span class="etiqueta etiqueta-gris">identificado con IA</span>{% endif %}
+              <span class="etiqueta confianza-{{ item.confianza|confianza }}">confianza {{ item.confianza|confianza }}</span></div>
+            {% include "usuario/_item_detalle.html" %}</td>
+          <td class="num" data-titulo="Cantidad">{{ item.cantidad_g|entero }} g</td>
+          <td data-titulo="Preparación">{{ item.metodo|default:"—" }}{% if item.aceite_g %}<div class="texto-secundario pequeno">aceite {{ item.aceite_g }} g</div>{% endif %}</td>
+          <td class="num" data-titulo="kcal">{{ item.kcal|cifra:ocultar_cifras|entero }}{% if not ocultar_cifras %}<div class="texto-secundario pequeno">{{ item.kcal_min|entero }}–{{ item.kcal_max|entero }}</div>{% endif %}</td>
+          <td class="num" data-titulo="Proteínas">{{ item.proteinas }} g</td>
+          <td class="num" data-titulo="Carbohidratos">{{ item.carbohidratos }} g</td>
+          <td class="num" data-titulo="Azúcares">{{ item.azucares }} g</td>
+          <td class="num" data-titulo="Grasas">{{ item.grasas }} g</td>
+          <td><a class="pequeno" href="{% url 'item_corregir' item.pk %}">Reportar error</a></td>
+        </tr>
+      {% endif %}{% endfor %}
+      </tbody>
+      <tfoot><tr><th>Total</th><td></td><td></td><td class="num"><strong>{{ comida.kcal|cifra:ocultar_cifras|entero }}</strong></td><td class="num">{{ comida.proteinas }} g</td><td class="num">{{ comida.carbohidratos }} g</td><td class="num">{{ comida.azucares }} g</td><td class="num">{{ comida.grasas }} g</td><td></td></tr></tfoot>
+    </table>
+  </div>
+  <p class="texto-secundario pequeno">Los valores se guardaron en el momento del registro: si el catálogo cambia después, este historial no cambia solo. Al editar, se recalcula con el catálogo vigente.</p>
+  <div class="acciones">
+    <a class="boton boton-secundario" href="{% url 'comida_editar' comida.pk %}">Editar</a>
+    <form method="post" action="{% url 'comida_favorita' comida.pk %}" class="formulario-en-linea">{% csrf_token %}
+      {% if not comida.es_favorita %}<input type="hidden" name="nombre" value="{{ comida.get_tipo_display }} favorito">{% endif %}
+      <button class="boton boton-secundario" type="submit">{% if comida.es_favorita %}★ Quitar de favoritas{% else %}☆ Guardar como favorita{% endif %}</button>
+    </form>
+    <a class="boton boton-secundario" href="{% url 'comida_eliminar' comida.pk %}">Eliminar</a>
+    <a class="boton boton-secundario" href="{% url 'historial' %}">Volver</a>
+  </div>
+</section>
+{% endblock %}

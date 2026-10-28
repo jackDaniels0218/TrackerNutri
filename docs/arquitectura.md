@@ -1,208 +1,157 @@
-# Arquitectura del sistema
+# Arquitectura de NutriRegional
 
-Documento de apoyo para explicar el proyecto: qué hace cada archivo, qué
-recibe, qué devuelve y qué se puede modificar sin romper lo demás.
+## 1. Principio rector
 
----
+> **La IA interpreta, Python calcula.**
 
-## 1. Idea central
+El SRS exige que los cálculos nutricionales los haga un motor determinista
+sobre un catálogo curado. Por eso el sistema separa tres responsabilidades:
 
-> **La IA interpreta. Python calcula.**
-
-El texto del usuario pasa por la IA solo para convertirse en una lista de
-alimentos con cantidades. A partir de ahí, todo son cálculos propios con
-datos del catálogo. Esto tiene dos consecuencias prácticas:
-
-- Los totales son **reproducibles**: el mismo registro da siempre el mismo
-  número, porque lo calcula una fórmula, no un modelo de lenguaje.
-- La aplicación **funciona sin IA**: el registro manual entra por el mismo
-  camino de cálculo.
-
----
-
-## 2. Recorrido de una comida
-
-```
-Usuario escribe:
-"una arepa frita mediana y una gaseosa de 400 ml"
-        │
-        ▼
-┌───────────────────────┐
-│ views.nueva_comida    │  valida el texto (AnalisisComidaForm)
-└───────────┬───────────┘
-            ▼
-┌───────────────────────┐
-│ ai_service            │  llama a la API con un esquema JSON estricto
-│ .interpretar_comida   │  y VALIDA la respuesta en el backend
-└───────────┬───────────┘
-            │  [{"name":"arepa","quantity":1,"unit":"unidad",
-            │    "preparation":"frita","needs_confirmation":true}, ...]
-            ▼
-┌───────────────────────┐
-│ food_parser           │  "frita" -> frito ; "unidad" -> unidad
-│ .normalizar_item      │  busca la ficha del catálogo (arepa FRITA)
-└───────────┬───────────┘
-            ▼
-┌───────────────────────┐
-│ confirmar_comida.html │  el usuario REVISA y CORRIGE  ← nada guardado aún
-└───────────┬───────────┘
-            ▼
-┌───────────────────────┐
-│ comidas.guardar_comida│  por cada fila llama a...
-└───────────┬───────────┘
-            ▼
-┌───────────────────────┐
-│ nutrition.calcular    │  convierte unidades y aplica
-│                       │  valor_100 * cantidad / 100
-└───────────┬───────────┘
-            ▼
-     RegistroComida + DetalleComida (con instantánea de los valores usados)
-            ▼
-     panel / historial / gráficos
-```
-
-Si la IA falla en el segundo paso, el usuario entra por
-`views.comida_manual` y el recorrido continúa idéntico desde
-`comidas.guardar_comida`.
-
----
-
-## 3. Archivos principales
-
-### `core/models.py`
-Las cuatro entidades del dominio.
-
-- **Recibe:** nada; define la estructura.
-- **Relaciona:** `User 1—1 PerfilNutricional`, `User 1—N RegistroComida`,
-  `RegistroComida 1—N DetalleComida`, `Alimento 1—N DetalleComida`.
-- **Detalle importante:** `DetalleComida` guarda los campos `*_ref`, una
-  instantánea de los valores por 100 que se aplicaron. Por eso corregir una
-  ficha del catálogo **no altera el historial**.
-- **Qué puedes cambiar:** añadir campos opcionales a `Alimento` o
-  `PerfilNutricional`. Hazlo con `makemigrations`.
-- **Qué NO cambies sin pensarlo:** el `on_delete=SET_NULL` de
-  `DetalleComida.alimento`; borrar un alimento no debe borrar el historial.
-
-### `core/services/nutrition.py`
-El motor de cálculo. **El archivo más importante del proyecto.**
-
-- **Recibe:** un `Alimento`, una cantidad y una unidad.
-- **Procesa:** valida la cantidad, convierte a la base del alimento (g o ml),
-  aplica la regla de tres y redondea a 1 decimal.
-- **Devuelve:** un `ResultadoCalculo` con los cuatro nutrientes, o con
-  `None` y un motivo si no se pudo calcular.
-- **Cómo probarlo:** `python manage.py test core.tests.test_nutrition`
-- **Qué puedes cambiar:** la política de redondeo (`DECIMALES`) o la
-  estimación de aceite (`GRAMOS_ACEITE_POR_100G_FRITO`). Si cambias el
-  redondeo, varias pruebas fallarán: es lo correcto, actualízalas a mano.
-
-### `core/services/food_parser.py`
-Traductor entre cómo habla la gente y cómo nombra las cosas el catálogo.
-
-- **Recibe:** nombres y unidades en texto libre ("Coca-Cola", "gr", "fritas").
-- **Devuelve:** el `Alimento` que corresponde, o `None`.
-- **Qué puedes cambiar:** los diccionarios `SINONIMOS_*` del principio. Es el
-  sitio natural para mejorar la cobertura regional (añadir "mute", "sancocho",
-  "changua"…) sin tocar lógica.
-
-### `core/services/ai_service.py`
-Único punto del sistema que habla con una API externa.
-
-- **Recibe:** el texto del usuario (máx. 500 caracteres).
-- **Devuelve:** una lista de items validados.
-- **Lanza:** `IANoConfigurada`, `IANoDisponible`, `RespuestaIAInvalida` o
-  `TextoNoInterpretable`; todas traen `mensaje_usuario`.
-- **Garantía:** `validar_respuesta()` descarta cualquier campo que no esté en
-  el esquema. Aunque el modelo devuelva "calorías: 9999", se ignora.
-- **Qué puedes cambiar:** `INSTRUCCIONES` (el prompt) y `OPENAI_MODEL`.
-
-### `core/services/comidas.py`
-Pegamento entre las tres piezas anteriores y la base de datos.
-
-- **Por qué existe:** para que la web y la API REST guarden exactamente igual.
-  Si estuviera en `views.py`, la API tendría su propia copia y acabarían
-  desincronizadas.
-
-### `core/views.py` y `core/api.py`
-Las páginas y los endpoints. No calculan: delegan.
-
-- **Control de acceso:** `@login_required` + filtro `usuario=request.user` en
-  cada consulta. Pedir la comida de otro devuelve 404.
-
----
-
-## 4. Modelo de datos
-
-```
-        User (Django)
-          │ 1
-          ├──────────── 1  PerfilNutricional
-          │                  meta_calorias_diaria
-          │ 1
-          │
-          │ N
-     RegistroComida
-       fecha, descripcion, origen (ia|manual), confirmado
-          │ 1
-          │
-          │ N
-     DetalleComida ──── N ──── 1 ──── Alimento
-       cantidad, unidad                nombre, categoria
-       metodo_preparacion              calorias/proteinas/... por 100
-       cantidad_base                   unidad_referencia (g|ml)
-       calorias_ref, proteinas_ref…    metodo_preparacion
-         (instantánea)                 gramos_por_unidad
-       calorias, proteinas…            fuente, valores_aproximados
-         (ya calculado)
-```
-
-### Tres decisiones de diseño que conviene saber explicar
-
-**1. ¿Por qué los valores se guardan por 100 g y no por porción?**
-Porque así vienen publicados en las tablas de composición de alimentos, y
-porque una sola fórmula sirve para cualquier cantidad. La porción habitual se
-guarda aparte, en `gramos_por_unidad`.
-
-**2. ¿Por qué la instantánea en `DetalleComida`?**
-Sin ella, corregir las calorías de la arepa cambiaría el historial de todos
-los usuarios hacia atrás. Con ella, cada registro conserva lo que se aplicó
-ese día.
-
-**3. ¿Por qué `alimento` puede ser nulo?**
-Porque "no sé cuántas calorías tiene esto" es una respuesta honesta y
-"0 calorías" no lo es. El resumen diario informa de cuántos alimentos
-quedaron sin datos en lugar de esconderlos.
-
----
-
-## 5. Endpoints de la API
-
-| Método | Ruta | Para qué |
+| Responsabilidad | Quién la tiene | Por qué |
 |---|---|---|
-| GET | `/api/alimentos/?buscar=` | Buscador del catálogo |
-| GET, PATCH | `/api/perfil/` | Leer y cambiar la meta |
-| POST | `/api/analizar/` | Texto → alimentos detectados (no guarda) |
-| GET, POST | `/api/comidas/?fecha=` | Listar el día / crear comida |
-| GET, PUT, DELETE | `/api/comidas/<id>/` | Ver, editar, borrar |
-| GET | `/api/resumen/?fecha=` | Totales del día |
-| GET | `/api/tendencia/?dias=7` | Serie para el gráfico |
+| Entender el texto | Léxico regional → similitud → semántica → IA (opcional) | El léxico es gratis, rápido y explicable; la IA solo cubre lo que el léxico no reconoce |
+| Saber qué contiene cada alimento | Catálogo curado y versionado | Fuente documentada, validación de Atwater, historial de cambios |
+| Calcular | `core/services/calculo.py` y `aceite.py` | Determinista: la misma entrada da siempre el mismo resultado, con su desglose |
 
-Todos exigen sesión iniciada y filtran por el usuario autenticado.
+La respuesta de la IA se valida con un esquema JSON estricto que **no tiene
+campos de energía ni nutrientes**: aunque el modelo los invente, no pasan.
 
----
+## 2. Capas
 
-## 6. Seguridad
+```
+Navegador (plantillas + Chart.js)       Cliente móvil futuro
+            │                                    │
+     core/views/  (por rol)              core/api/  (REST v1, OpenAPI)
+            │                                    │
+            └──────────────┬─────────────────────┘
+                           │   sin lógica de negocio en las vistas
+                    core/services/
+   interpretacion · calculo · aceite · comidas · metas · salvaguardas
+   ia · curacion · reportes · notificaciones · cuentas · parametros · auditoria
+                           │
+                     core/models/   (ORM de Django)
+                           │
+                        SQLite  (PostgreSQL en producción)
+```
+
+- **Vistas y API** solo validan la entrada, verifican el rol y llaman a un
+  servicio. Las dos interfaces comparten los mismos servicios: no hay dos
+  implementaciones del mismo cálculo.
+- **Servicios** contienen todas las reglas del SRS y se prueban sin HTTP.
+- **Parámetros como datos** (RF11): umbrales, factores, límites de seguridad,
+  costos y modelo de IA están en la tabla `Parametro` y se leen con
+  `parametro("clave")`. Cambiar un valor no exige desplegar código, y cada
+  cambio queda en la bitácora.
+
+## 3. Recorrido de una comida (RF13 → RF14 → RF15 → RF7)
+
+1. **Segmentar** la frase por conectores («y», «con», comas), salvo que el
+   conjunto sea un nombre conocido («arroz con pollo»).
+2. **Extraer** cantidades («200 g», «dos», «un vaso») y método de cocción
+   («frita», «asada», «al ajillo»).
+3. **Resolver** cada fragmento contra el catálogo en cascada:
+   léxico exacto → similitud de texto (errores como «aripa») → coincidencia
+   semántica → IA (solo los fragmentos sin resolver, con autorización y dentro
+   del presupuesto) → **pendiente** (va a la bandeja del Curador; nunca se
+   inventa un alimento).
+4. **Método**: explícito, implícito en la preparación («mojarra frita»), por
+   defecto del alimento o pregunta de aclaración.
+5. **Cantidad**: gramos, medida casera del catálogo o porción por defecto.
+6. **Confianza** = resolución × cantidad × método. Bajo el umbral
+   (`umbral_confianza`) se hacen como máximo dos preguntas con opciones
+   tocables, priorizando lo que más energía aporta.
+7. **Calcular**: las preparaciones se deconstruyen en sus componentes, cada uno
+   con su método (factor de agua, grasa que gotea, aceite absorbido según la
+   matriz). El resultado incluye rango mínimo–máximo y el desglose línea por
+   línea, que se guarda congelado en `ItemComida.detalle_calculo`.
+8. **Confirmar**: la comida queda *interpretada* hasta que la persona la
+   confirma; solo entonces cuenta en los totales. Cada comida guarda la versión
+   del motor, del catálogo y de la plantilla de IA usadas.
+
+## 4. Metas y salvaguardas (RF8, RF16, RF17)
+
+- **Meta inicial**: Mifflin-St Jeor × factor de actividad − déficit del ritmo
+  (10 % lento, 20 % moderado), nunca por debajo del piso (1200 / 1500 kcal) ni
+  por encima del déficit máximo (25 %). La explicación paso a paso se guarda
+  con la meta.
+- **Ajuste semanal**: con al menos 5 días marcados como completos y 2 pesajes,
+  se estima el gasto real (ingesta media − cambio del peso tendencial × 7700
+  kcal/kg), se suaviza con el anterior, se limita a ±150 kcal o 10 % y queda
+  **revertible 48 horas**.
+- **Elegibilidad**: menores de edad, gestantes o lactantes y quien declare una
+  condición que requiere acompañamiento reciben metas informativas, sin
+  déficit.
+- **Riesgos**: días completos seguidos bajo el piso o pérdida mayor al 1 %
+  semanal dos semanas seguidas generan un aviso amable con el contacto de
+  apoyo y detienen las reducciones.
+- **Lenguaje**: una prueba revisa que ninguna plantilla use palabras como
+  «malo», «trampa» o «pecado».
+
+## 5. Catálogo y mejora continua (RF3–RF6, RF19)
+
+- Todo cambio del Curador queda en una **versión en borrador** con su valor
+  anterior y el nuevo (`HistorialCatalogo`) y se puede revertir.
+- **Publicar** una versión ejecuta el conjunto de 200 frases de referencia; si
+  la identificación o el método de cocción bajan de los umbrales, o empeoran
+  frente a la versión publicada, la publicación se bloquea.
+- Los términos no reconocidos llegan a la bandeja ordenados por frecuencia,
+  sin datos de quién los escribió.
+
+## 6. Seguridad y datos personales (RNF26, RNF27, RNF28)
 
 | Medida | Dónde |
 |---|---|
-| Contraseñas con hash y validadores | `django.contrib.auth` (no hay sistema propio) |
-| Protección CSRF | `{% csrf_token %}` en todos los formularios |
-| Inyección SQL | Solo se usa el ORM; no hay SQL escrito a mano |
-| Datos aislados por usuario | Filtro `usuario=request.user` en cada consulta |
-| Rutas privadas | `@login_required` + permisos de DRF |
-| Secretos | Variables de entorno; `.env` fuera del repositorio |
-| Errores sin trazas internas | Mensajes legibles; el detalle va al log |
-| Cabeceras seguras en producción | Bloque `if not DEBUG` de `settings.py` |
+| Rol verificado en el servidor en cada petición | `core/views/utilidades.py` (`solo_usuario`, `solo_curador`, `solo_admin`) |
+| Cada consulta del Usuario filtra por su cuenta: lo ajeno da 404 | vistas y API |
+| Bloqueo tras 5 intentos fallidos durante 15 minutos | `core/forms.py` (`IngresoForm`), `core/signals.py` |
+| Sesión de 60 minutos renovable; cerrar sesión en todos los dispositivos | `config/settings.py`, `services/cuentas.py` |
+| Cuenta bloqueada o inactiva: su sesión se cierra en la siguiente petición | `core/middleware.py` |
+| Autorizaciones de datos y de IA separadas, revocables y con historial de solo inserción | `Consentimiento` |
+| Exportar todos los datos y suprimir la cuenta | `privacidad/` |
+| El Administrador ve datos individuales solo con autorización temporal del titular, y queda registrado | `cuenta_soporte` |
+| Bitácora de solo inserción | `Bitacora.save()` / `delete()` |
+| Clave de IA solo en variables de entorno, nunca en el código ni en el cliente | `.env` |
+| CSRF, ORM sin SQL manual, cookies seguras con `DEBUG=False` | Django |
 
-La prueba `SeparacionEntreUsuariosTests` comprueba expresamente que un usuario
-no puede ver, editar ni borrar las comidas de otro.
+## 7. Disponibilidad y costos de la IA (RNF32, RNF33)
+
+- Si la IA no está configurada, no hay autorización, se agotó el límite diario
+  o el presupuesto, o el proveedor falla, la interpretación sigue con reglas y
+  la persona ve un aviso; el registro manual está siempre disponible.
+- Caché de interpretaciones por fragmento normalizado, límite diario por
+  usuario, presupuesto mensual con alerta al 80 % y registro de tokens, costo,
+  latencia y errores (`UsoIA`).
+- El proveedor es intercambiable (`ia_proveedor`): **openai**; **compatible**,
+  cualquier servicio con la API de OpenAI y nivel gratuito (Groq, OpenRouter,
+  Google AI Studio, Cerebras, Mistral…) con su propia clave
+  `IA_COMPATIBLE_API_KEY`; **local** (Ollama, LM Studio), que no recibe
+  ninguna clave; o **ninguno**. Si el modelo no admite el esquema estricto se
+  pide JSON simple y la respuesta pasa por la misma validación.
+
+## 8. API REST v1
+
+Autenticación por sesión; solo el rol Usuario. Esquema en `/api/v1/esquema/`.
+
+| Método y ruta | Uso |
+|---|---|
+| `GET /api/v1/perfil/` | Perfil y meta vigente |
+| `GET /api/v1/alimentos/?buscar=`, `GET /api/v1/preparaciones/?buscar=` | Búsqueda en el catálogo |
+| `POST /api/v1/interpretar/` | Interpreta texto libre y crea la comida sin confirmar |
+| `GET/POST /api/v1/comidas/` | Comidas del día · registro manual idempotente |
+| `GET/DELETE /api/v1/comidas/<id>/`, `POST .../confirmar/` | Detalle, baja lógica, confirmación |
+| `GET /api/v1/resumen/`, `GET /api/v1/series/?dias=` | Totales del día y series para gráficos |
+| `GET/POST /api/v1/pesajes/`, `GET /api/v1/metas/`, `GET /api/v1/notificaciones/` | Seguimiento |
+
+## 9. Modelo de datos
+
+El detalle de cada tabla está en [diccionario_datos.md](diccionario_datos.md).
+Decisiones que conviene saber explicar:
+
+1. **Valores congelados**: cada ítem guarda sus nutrientes y su desglose. Si el
+   Curador corrige el catálogo, el historial del usuario no cambia en silencio.
+2. **Baja lógica**: una comida eliminada pasa a *descartada*; deja de contar
+   pero se conserva para auditoría.
+3. **Una sola meta vigente** por usuario (restricción única condicional) y un
+   historial que no se borra.
+4. **Nulo no es cero**: un nutriente desconocido queda vacío; el sistema avisa
+   que el total puede estar incompleto en lugar de sumar cero.

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titulo %}Parámetros{% endblock %}
+{% block contenido %}
+<h1>Parámetros del sistema</h1>
+<p class="texto-secundario">{% if rol == ROL_CURADOR %}Como Curador puedes cambiar los parámetros nutricionales.{% else %}Valores configurables del motor, las salvaguardas, la IA y el sistema.{% endif %} No se crean ni se eliminan parámetros: solo se modifican, y cada cambio queda en la bitácora.</p>
+{% for grupo, lista in grupos.items %}
+<section class="tarjeta"><h2>{{ grupo }}</h2>
+  <div class="tabla-responsiva"><table class="tabla tabla-tarjetas"><thead><tr><th>Clave</th><th>Valor</th><th>Descripción</th><th>Modificado</th><th></th></tr></thead>
+    <tbody>{% for p in lista %}<tr><td data-titulo="Clave"><code>{{ p.clave }}</code></td><td data-titulo="Valor" class="pequeno"><strong>{{ p.valor|truncatechars:70 }}</strong></td>
+      <td data-titulo="Descripción" class="pequeno">{{ p.descripcion }}</td><td data-titulo="Modificado" class="pequeno">{{ p.modificado_en|date:"d/m/Y" }}{% if p.modificado_por %} · {{ p.modificado_por.email }}{% endif %}</td>
+      <td><a href="{% url 'parametro_editar' p.pk %}">Editar</a></td></tr>{% endfor %}</tbody></table></div></section>
+{% endfor %}
+{% endblock %}

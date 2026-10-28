@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titulo %}{% if preparacion %}Editar {{ preparacion }}{% else %}Nueva preparación{% endif %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <h1>{% if preparacion %}Editar «{{ preparacion }}»{% else %}Nueva preparación{% endif %}</h1>
+  <p class="texto-secundario">Indica los gramos <strong>crudos</strong> de cada ingrediente por porción típica. El método de un ingrediente solo se indica si difiere del de la preparación. Al guardar se valida que la suma cocinada sea coherente con el peso de la porción.</p>
+  {% if aviso_peso %}<p class="aviso aviso-advertencia">{{ aviso_peso }}</p>{% endif %}
+  <form method="post" class="formulario" novalidate>{% csrf_token %}
+    <div class="campos-fila">{% for campo in form %}{% include "generico/_campo.html" %}{% endfor %}</div>
+    <h2>Ingredientes</h2>
+    {{ componentes.management_form }}
+    {% if componentes.non_form_errors %}<p class="aviso aviso-error">{{ componentes.non_form_errors|join:" " }}</p>{% endif %}
+    <div class="tabla-responsiva"><table class="tabla tabla-tarjetas">
+      <thead><tr><th>Ingrediente</th><th>g crudos</th><th>Método propio</th><th>Rol</th><th>Opcional</th><th>Quitar</th></tr></thead>
+      <tbody>{% for f in componentes %}<tr>{% for oculto in f.hidden_fields %}{{ oculto }}{% endfor %}
+        <td data-titulo="Ingrediente">{{ f.alimento }}{{ f.alimento.errors }}</td><td data-titulo="g crudos">{{ f.cantidad_g }}{{ f.cantidad_g.errors }}</td>
+        <td data-titulo="Método">{{ f.metodo }}</td><td data-titulo="Rol">{{ f.rol }}</td><td data-titulo="Opcional">{{ f.opcional }}</td><td data-titulo="Quitar">{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <div class="acciones"><button class="boton boton-principal" type="submit">Guardar</button><a class="boton boton-secundario" href="{% url 'catalogo_preparaciones' %}">Cancelar</a></div>
+  </form>
+</section>
+{% endblock %}

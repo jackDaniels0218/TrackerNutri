@@ -1,0 +1,7 @@
+{% if pagina.has_other_pages %}
+<nav class="paginacion" aria-label="Páginas">
+  {% if pagina.has_previous %}<a class="boton boton-secundario boton-pequeno" href="?q={{ q|urlencode }}&pagina={{ pagina.previous_page_number }}">←</a>{% endif %}
+  <span class="texto-secundario">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+  {% if pagina.has_next %}<a class="boton boton-secundario boton-pequeno" href="?q={{ q|urlencode }}&pagina={{ pagina.next_page_number }}">→</a>{% endif %}
+</nav>
+{% endif %}
