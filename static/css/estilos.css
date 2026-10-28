@@ -322,6 +322,14 @@ details.desglose ol, details.desglose ul { font-size: .84rem; color: var(--texto
   .tarjeta, .indicador { box-shadow: none; border: 0; padding: 0; }
 }
 
+/* --- Tablet ------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .contenedor { padding: 0 20px; }
+  .rejilla { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .indicadores { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+}
+
 /* --- Móvil -------------------------------------------------------------- */
 
 @media (max-width: 680px) {
@@ -386,6 +394,53 @@ details.desglose ol, details.desglose ul { font-size: .84rem; color: var(--texto
     opacity: 0; pointer-events: none; transition: opacity .2s;
   }
   .menu-overlay.visible { opacity: 1; pointer-events: auto; }
+}
+
+/* --- Escritorio (desktop) ----------------------------------------------- */
+
+@media (min-width: 681px) {
+  /* Asegurar que el botón hamburguesa esté oculto en escritorio */
+  .menu-toggle { display: none !important; }
+  .menu-panel { display: none !important; }
+  .menu-overlay { display: none !important; }
+
+  /* Navegación de escritorio: distribución equilibrada */
+  .cabecera-interior {
+    flex-wrap: nowrap;
+    gap: 24px;
+  }
+
+  .navegacion {
+    display: flex !important;
+    flex: 1;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .navegacion > a,
+  .navegacion summary,
+  .boton-enlace {
+    padding: 8px 16px;
+    font-size: .9rem;
+    white-space: nowrap;
+  }
+
+  .navegacion details {
+    position: relative;
+  }
+
+  .submenu {
+    right: 0;
+    left: auto;
+    min-width: 240px;
+  }
+
+  /* Mejorar espaciado en tarjetas e indicadores en escritorio */
+  .indicadores { gap: 18px; }
+  .indicador { padding: 18px 20px; }
+  .indicador .valor { font-size: 2.1rem; }
+  .tarjeta { padding: 24px; }
+  .rejilla { gap: 24px; }
 }
 
 /* Acceso discreto a /requerimientos/: el texto toma el color del fondo donde está. */
