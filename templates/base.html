@@ -15,6 +15,8 @@
       </a>
       {% if user.is_authenticated %}
         {% with ruta=request.resolver_match.url_name %}
+        <!-- Botón hamburguesa para móvil -->
+        <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-panel" style="display:none;">☰</button>
         <nav class="navegacion" aria-label="Menú principal">
           {% if rol == ROL_USUARIO %}
             <a href="{% url 'panel' %}" {% if ruta == 'panel' %}class="activo"{% endif %}>Hoy</a>
@@ -83,12 +85,88 @@
           </details>
         </nav>
         {% endwith %}
+        <!-- Panel deslizante móvil -->
+        <div class="menu-overlay" id="menu-overlay" aria-hidden="true"></div>
+        <div class="menu-panel" id="menu-panel" role="dialog" aria-label="Menú principal" aria-hidden="true">
+          <button class="cerrar-menu" aria-label="Cerrar menú">✕ Cerrar</button>
+          {% with ruta=request.resolver_match.url_name %}
+          {% if rol == ROL_USUARIO %}
+            <a href="{% url 'panel' %}" {% if ruta == 'panel' %}class="activo" aria-current="page"{% endif %}>📅 Hoy</a>
+            <a href="{% url 'comida_nueva' %}" {% if ruta == 'comida_nueva' or ruta == 'comida_manual' %}class="activo" aria-current="page"{% endif %}>➕ Registrar comida</a>
+            <a href="{% url 'historial' %}" {% if ruta == 'historial' %}class="activo" aria-current="page"{% endif %}>📋 Historial</a>
+            <a href="{% url 'peso' %}" {% if ruta == 'peso' %}class="activo" aria-current="page"{% endif %}>⚖️ Peso</a>
+            <a href="{% url 'metas' %}" {% if ruta == 'metas' %}class="activo" aria-current="page"{% endif %}>🎯 Meta</a>
+            <a href="{% url 'reportes' %}" {% if ruta == 'reportes' %}class="activo" aria-current="page"{% endif %}>📊 Reportes</a>
+            <details>
+              <summary>⋯ Más opciones</summary>
+              <div class="submenu">
+                <a href="{% url 'favoritas' %}">⭐ Comidas favoritas</a>
+                <a href="{% url 'calculadora_aceite' %}">🫒 Calculadora de aceite</a>
+                <a href="{% url 'mis_alimentos' %}">🥑 Mis alimentos</a>
+                <a href="{% url 'mis_correcciones' %}">✏️ Mis correcciones</a>
+                <a href="{% url 'perfil' %}">👤 Perfil nutricional</a>
+                <a href="{% url 'recordatorios' %}">🔔 Recordatorios</a>
+                <a href="{% url 'privacidad' %}">🔒 Privacidad y cuidado</a>
+                <a href="{% url 'cuenta' %}">⚙️ Mi cuenta</a>
+              </div>
+            </details>
+          {% elif rol == ROL_CURADOR %}
+            <a href="{% url 'curacion' %}" {% if ruta == 'curacion' %}class="activo" aria-current="page"{% endif %}>📥 Bandeja</a>
+            <a href="{% url 'catalogo_alimentos' %}" {% if ruta == 'catalogo_alimentos' %}class="activo" aria-current="page"{% endif %}>🥗 Alimentos</a>
+            <a href="{% url 'catalogo_preparaciones' %}" {% if ruta == 'catalogo_preparaciones' %}class="activo" aria-current="page"{% endif %}>🍲 Preparaciones</a>
+            <a href="{% url 'catalogo_metodos' %}" {% if ruta == 'catalogo_metodos' %}class="activo" aria-current="page"{% endif %}>🔥 Cocción</a>
+            <a href="{% url 'catalogo_lexico' %}" {% if ruta == 'catalogo_lexico' %}class="activo" aria-current="page"{% endif %}>📝 Léxico</a>
+            <a href="{% url 'versiones' %}" {% if ruta == 'versiones' %}class="activo" aria-current="page"{% endif %}>📚 Versiones</a>
+            <a href="{% url 'exactitud' %}" {% if ruta == 'exactitud' %}class="activo" aria-current="page"{% endif %}>🎯 Exactitud</a>
+            <details>
+              <summary>⋯ Más opciones</summary>
+              <div class="submenu">
+                <a href="{% url 'catalogo_porciones' %}">🥄 Porciones caseras</a>
+                <a href="{% url 'parametros' %}">⚙️ Parámetros nutricionales</a>
+                <a href="{% url 'indicadores' %}">📈 Indicadores agregados</a>
+                <a href="{% url 'auditoria' %}?ver=catalogo">📜 Historial del catálogo</a>
+                <a href="{% url 'cuenta' %}">⚙️ Mi cuenta</a>
+              </div>
+            </details>
+          {% elif rol == ROL_ADMIN %}
+            <a href="{% url 'administracion' %}" {% if ruta == 'administracion' %}class="activo" aria-current="page"{% endif %}>🏠 Inicio</a>
+            <a href="{% url 'cuentas_admin' %}" {% if ruta == 'cuentas_admin' %}class="activo" aria-current="page"{% endif %}>👥 Cuentas</a>
+            <a href="{% url 'parametros' %}" {% if ruta == 'parametros' %}class="activo" aria-current="page"{% endif %}>⚙️ Parámetros</a>
+            <a href="{% url 'ia_admin' %}" {% if ruta == 'ia_admin' %}class="activo" aria-current="page"{% endif %}>🤖 IA y costos</a>
+            <a href="{% url 'auditoria' %}" {% if ruta == 'auditoria' %}class="activo" aria-current="page"{% endif %}>📋 Auditoría</a>
+            <a href="{% url 'procesos' %}" {% if ruta == 'procesos' %}class="activo" aria-current="page"{% endif %}>⚙️ Procesos</a>
+            <details>
+              <summary>⋯ Más opciones</summary>
+              <div class="submenu">
+                <a href="{% url 'indicadores' %}">📈 Indicadores agregados</a>
+                <a href="{% url 'catalogo_alimentos' %}">🥗 Catálogo (consulta)</a>
+                <a href="{% url 'exactitud' %}">🎯 Exactitud del catálogo</a>
+                <a href="{% url 'cuenta' %}">⚙️ Mi cuenta</a>
+              </div>
+            </details>
+          {% endif %}
+          <a href="{% url 'notificaciones' %}" aria-label="Notificaciones" {% if ruta == 'notificaciones' %}class="activo" aria-current="page"{% endif %}>🔔 Notificaciones{% if notificaciones_sin_leer %} <span class="insignia">{{ notificaciones_sin_leer }}</span>{% endif %}</a>
+          <form action="{% url 'logout' %}" method="post" class="formulario-en-linea">{% csrf_token %}
+            <button type="submit" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;background:var(--rojo-claro);color:var(--rojo);border:2px solid var(--rojo);font:inherit;font-weight:700;font-size:1rem;cursor:pointer;">🚪 Cerrar sesión</button>
+          </form>
+          {% endwith %}
+        </div>
       {% else %}
+        <!-- Botón hamburguesa para móvil (no autenticado) -->
+        <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-panel" style="display:none;">☰</button>
         <nav class="navegacion" aria-label="Acceso">
           <a class="discreto" href="{% url 'requerimientos' %}">Requerimientos</a>
           <a href="{% url 'login' %}">Ingresar</a>
           <a href="{% url 'registro' %}" class="boton boton-principal boton-pequeno">Crear cuenta</a>
         </nav>
+        <!-- Panel deslizante móvil para no autenticados -->
+        <div class="menu-overlay" id="menu-overlay" aria-hidden="true"></div>
+        <div class="menu-panel" id="menu-panel" role="dialog" aria-label="Menú de acceso" aria-hidden="true">
+          <button class="cerrar-menu" aria-label="Cerrar menú">✕ Cerrar</button>
+          <a href="{% url 'requerimientos' %}">📋 Requerimientos</a>
+          <a href="{% url 'login' %}">🔑 Ingresar</a>
+          <a href="{% url 'registro' %}" class="boton boton-principal" style="width:100%;text-align:center;">✨ Crear cuenta</a>
+        </div>
       {% endif %}
     </div>
   </header>
@@ -112,6 +190,77 @@
       <p>Prototipo académico · Universidad de Cundinamarca, Facatativá.</p>
     </div>
   </footer>
+  <script>
+  // Menú móvil - toggle slide panel
+  (function() {
+    const toggle = document.querySelector('.menu-toggle');
+    const panel = document.getElementById('menu-panel');
+    const overlay = document.getElementById('menu-overlay');
+    const closeBtn = panel?.querySelector('.cerrar-menu');
+
+    if (!toggle || !panel || !overlay) return;
+
+    function openMenu() {
+      panel.classList.add('abierto');
+      overlay.classList.add('visible');
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.textContent = '✕';
+      panel.setAttribute('aria-hidden', 'false');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      panel.classList.remove('abierto');
+      overlay.classList.remove('visible');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.textContent = '☰';
+      panel.setAttribute('aria-hidden', 'true');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (panel.classList.contains('abierto')) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    closeBtn?.addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
+
+    // Cerrar al hacer click en un enlace (excepto en details/summary)
+    panel.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      const summary = e.target.closest('summary');
+      if (link && !summary) {
+        closeMenu();
+      }
+    });
+
+    // Cerrar con tecla Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && panel.classList.contains('abierto')) {
+        closeMenu();
+      }
+    });
+
+    // Mostrar botón hamburguesa solo en móvil
+    function checkMobile() {
+      if (window.innerWidth <= 680) {
+        toggle.style.display = 'inline-flex';
+      } else {
+        toggle.style.display = 'none';
+        closeMenu();
+      }
+    }
+    window.addEventListener('resize', checkMobile);
+    checkMobile();
+  })();
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

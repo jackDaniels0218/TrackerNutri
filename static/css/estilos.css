@@ -338,6 +338,54 @@ details.desglose ol, details.desglose ul { font-size: .84rem; color: var(--texto
   .tabla-tarjetas td.num { text-align: right; }
   .submenu { right: auto; left: 0; }
   .acciones .boton { flex: 1 1 auto; }
+
+  /* --- Navegación móvil mejorada --- */
+  .cabecera-interior { padding: 8px 12px; gap: 8px; }
+  .marca { font-size: 1.1rem; }
+  .marca small { font-size: .65rem; padding: 1px 8px; }
+
+  /* Ocultar navegación de escritorio en móvil, usar panel deslizante */
+  .navegacion { display: none !important; }
+
+  /* Botón hamburguesa para menú completo en móvil */
+  .menu-toggle {
+    display: inline-flex !important;
+    align-items: center; justify-content: center;
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--verde-claro); color: var(--verde-oscuro);
+    border: 2px solid var(--verde); font-size: 1.3rem;
+  }
+  .menu-toggle[aria-expanded="true"] { background: var(--verde); color: #fff; }
+
+  /* Panel deslizante para menú móvil */
+  .menu-panel {
+    position: fixed; inset: 0 0 auto 0; background: var(--blanco);
+    border-bottom: 2px solid var(--borde); box-shadow: var(--sombra-alta);
+    padding: 16px 12px 24px; z-index: 100; transform: translateY(-100%);
+    transition: transform .25s ease-out; display: flex; flex-direction: column; gap: 8px;
+  }
+  .menu-panel.abierto { transform: translateY(0); }
+  .menu-panel a, .menu-panel summary {
+    display: block; padding: 14px 16px; border-radius: 12px;
+    color: var(--texto); text-decoration: none; font-weight: 700; font-size: 1rem;
+    background: var(--verde-claro); border: 2px solid var(--borde);
+  }
+  .menu-panel a:hover, .menu-panel summary:hover { background: var(--verde); color: #fff; border-color: var(--verde); }
+  .menu-panel a.activo { background: var(--verde); color: #fff; border-color: var(--verde-oscuro); }
+  .menu-panel .submenu {
+    position: static; background: transparent; border: 0; box-shadow: none; min-width: 0; padding: 8px 0 0 12px;
+  }
+  .menu-panel .submenu a { background: var(--amarillo-claro); border-color: var(--amarillo); font-size: .9rem; }
+  .menu-panel .submenu a:hover { background: var(--amarillo); color: var(--amarillo-texto); }
+  .menu-panel .cerrar-menu { align-self: flex-end; background: var(--rojo-claro); color: var(--rojo); border-color: var(--rojo); }
+  .menu-panel .cerrar-menu:hover { background: var(--rojo); color: #fff; }
+
+  /* Overlay para cerrar menú al tocar fuera */
+  .menu-overlay {
+    position: fixed; inset: 0; background: rgba(38,35,58,.4); z-index: 99;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .menu-overlay.visible { opacity: 1; pointer-events: auto; }
 }
 
 /* Acceso discreto a /requerimientos/: el texto toma el color del fondo donde está. */
